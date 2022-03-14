@@ -29,12 +29,13 @@ lazy val labs =
         "com.fasterxml.jackson.module" %% "jackson-module-scala"      % "2.13.1",
         "org.testcontainers"            % "testcontainers"            % "1.16.3",
         "org.testcontainers"            % "elasticsearch"             % "1.16.3",
+        "org.testcontainers"            % "cassandra"                 % "1.16.3",
         "org.rocksdb"                   % "rocksdbjni"                % "6.28.2",
         "org.mapdb"                     % "mapdb"                     % "3.0.8",
         "com.datastax.oss"              % "java-driver-core"          % "4.5.0",
         "com.datastax.oss"              % "java-driver-query-builder" % "4.5.0",
         "com.typesafe"                  % "config"                    % "1.4.2",
-        "org.scalatest"                %% "scalatest"                 % "3.2.9"   % Test
+        "org.scalatest"                %% "scalatest"                 % "3.2.9" % Test
       )
     )
     .dependsOn(`labs-macro`)

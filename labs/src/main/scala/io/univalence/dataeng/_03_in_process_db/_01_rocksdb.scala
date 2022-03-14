@@ -342,7 +342,7 @@ object _02_time_series_load_data {
         // JMX bean that collect the current memory usage
         val memoryBean = ManagementFactory.getMemoryMXBean
 
-        // this structure is only used to make more apparent momery usage
+        // this structure is only used to make more apparent memory usage
         var data = Map.empty[Long, Long]
 
         for (i <- 1 to 1000) {
