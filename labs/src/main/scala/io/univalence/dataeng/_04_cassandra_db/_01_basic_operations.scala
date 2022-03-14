@@ -53,6 +53,9 @@ import java.time.LocalDate
  * in two different manners, they you denormalize the data and you
  * create two tables with different partition key.
  *
+ * Also even if you can use ORDER BY to order your data, it is advised
+ * to use your clustering key to sort your data.
+ *
  * ==In this file==
  *   - The code is wrap around a TestContainer creating the Cassandra
  *     container to interact with.
@@ -61,7 +64,7 @@ import java.time.LocalDate
 object _01_basic_operations {
   val tableName: String = "videos"
 
-  case class Video(id: Int, title: String, date: LocalDate)
+  case class Video(id: Int, title: String, date: LocalDate, creator: String)
 
   def main(args: Array[String]): Unit = {
     def executeStatement(statement: SimpleStatement)(implicit session: CqlSession, keyspace: String): ResultSet = {
@@ -122,6 +125,7 @@ object _01_basic_operations {
             .value("video_id", QueryBuilder.bindMarker)
             .value("title", QueryBuilder.bindMarker)
             .value("creation_date", QueryBuilder.bindMarker)
+            .value("creator_name", QueryBuilder.bindMarker)
 
         val insertStatement: SimpleStatement     = insertInto.build
         val preparedStatement: PreparedStatement = session.prepare(insertStatement)
@@ -131,6 +135,7 @@ object _01_basic_operations {
             .setInt(0, video.id)
             .setString(1, video.title)
             .setLocalDate(2, video.date)
+            .setString(3, video.creator)
         session.execute(statement)
       }
 
@@ -140,17 +145,26 @@ object _01_basic_operations {
          * We can retrieve our newly inserted video using its partition
          * key.
          */
-        val query             = QueryBuilder.selectFrom(tableName).columns("video_id", "title", "creation_date")
-        val statement         = query.build
+        val query     = QueryBuilder.selectFrom(tableName).columns("video_id", "title", "creation_date", "creator_name")
+        val statement = query.build
         val result: ResultSet = session.execute(statement)
         val first             = result.one()
         val storedVideo =
           Video(
-            id    = first.getInt("video_id"),
-            title = first.getString("title"),
-            date  = first.getLocalDate("creation_date")
+            id      = first.getInt("video_id"),
+            title   = first.getString("title"),
+            date    = first.getLocalDate("creation_date"),
+            creator = first.getString("creator_name")
           )
         println(s"The stored video was $storedVideo.")
+      }
+
+      exercise("Design a table to query video by creator name sorted by creation date.") {
+        ???
+      }
+
+      exercise("Design a table to query video by creation date.") {
+        ???
       }
     }
   }
