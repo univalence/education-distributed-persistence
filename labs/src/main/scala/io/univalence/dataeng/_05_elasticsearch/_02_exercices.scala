@@ -11,8 +11,8 @@ import co.elastic.clients.json.JsonData
 import com.fasterxml.jackson.annotation.JsonCreator
 
 import io.univalence.dataeng._05_elasticsearch.Assertions._
-import io.univalence.dataeng._05_elasticsearch.Container.usingElasticSearch
 import io.univalence.dataeng._05_elasticsearch.ElasticSearch._
+import io.univalence.dataeng._05_elasticsearch.ElasticSearchConnector.usingElasticSearch
 import io.univalence.dataeng.internal.exercise_tools._
 
 import scala.jdk.CollectionConverters._

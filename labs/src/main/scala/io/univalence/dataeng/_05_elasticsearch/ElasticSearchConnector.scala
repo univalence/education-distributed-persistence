@@ -12,7 +12,7 @@ import org.elasticsearch.client.RestClient
 import org.testcontainers.elasticsearch.ElasticsearchContainer
 import org.testcontainers.utility.DockerImageName
 
-object Container {
+object ElasticSearchConnector {
 
   /**
    * A wrapper to run code using an ElasticSearch container and an

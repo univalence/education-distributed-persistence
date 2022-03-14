@@ -10,8 +10,8 @@ import co.elastic.clients.elasticsearch.indices.CreateIndexRequest
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.core.JsonParseException
 
-import io.univalence.dataeng._05_elasticsearch.Container.usingElasticSearch
 import io.univalence.dataeng._05_elasticsearch.ElasticSearch.{countIndex, search}
+import io.univalence.dataeng._05_elasticsearch.ElasticSearchConnector.usingElasticSearch
 import io.univalence.dataeng.internal.utils.retry
 
 import scala.io.Source
