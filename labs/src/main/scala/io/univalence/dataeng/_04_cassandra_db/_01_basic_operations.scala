@@ -2,7 +2,7 @@ package io.univalence.dataeng._04_cassandra_db
 
 import com.datastax.oss.driver.api.core.`type`.DataTypes
 import com.datastax.oss.driver.api.core.{CqlIdentifier, CqlSession}
-import com.datastax.oss.driver.api.core.cql.{ResultSet, Row, SimpleStatement}
+import com.datastax.oss.driver.api.core.cql.{PrepareRequest, ResultSet, Row, SimpleStatement}
 import com.datastax.oss.driver.api.querybuilder.QueryBuilder._
 import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
 import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert
@@ -14,16 +14,17 @@ import io.univalence.dataeng.internal.exercise_tools._
 
 import scala.io.Source
 import scala.jdk.CollectionConverters.CollectionHasAsScala
-import scala.util.{Try, Using}
+import scala.util.{Success, Try, Using}
 
 import java.io.FileInputStream
+import java.sql.PreparedStatement
 import java.util.zip.GZIPInputStream
 
 /**
  * =Cassandra=
- * We saw in-process databases such as RocksDB and MapDB. However, this
- * kind of databases doesn't scale when we need to deal with tons of
- * data.
+ * We have seen in-process databases such as RocksDB and MapDB. However,
+ * this kind of databases doesn't scale when we need to deal with tons
+ * of data.
  *
  * Cassandra is a column-oriented NoSQL database with eventual
  * consistency (meaning that it is focused on Availability and Partition
@@ -33,7 +34,7 @@ import java.util.zip.GZIPInputStream
  * using multiple nodes with no single point of failure (SPOF). Thus, it
  * is designed as a multi master system and not a master/slave system.
  * It means that some nodes can die without impacting directly the
- * system, so, operators have time replace dead nodes.
+ * system. So, operators have time replace dead nodes.
  *
  * Cassandra has first been created in Facebook offices and is now an
  * open source project under the Apache foundation, mainly managed by
@@ -59,7 +60,8 @@ import java.util.zip.GZIPInputStream
  * database.
  *
  * ==Cassandra specificity==
- * Cassandra differs a lot from SQL database because it is query first.
+ * Cassandra differs a lot from SQL database, because it is
+ * [[https://cassandra.apache.org/doc/latest/cassandra/data_modeling/data_modeling_rdbms.html#query-first-design query first]].
  * It means that we design Cassandra table with queries in mind. Indeed
  * in Cassandra you can't join tables and you can query the data only
  * using the partition keys. If you need to query the same kind of data
@@ -90,10 +92,10 @@ object _01_basic_operations {
     /**
      * We provide this function to insert an instance of Temperature
      * inside Cassandra. Because ''state'' is Optional, we have to
-     * handle both case when there is a state or not.
+     * handle both cases when there is a state or not.
      *
-     * By default, every column in Cassandra are optionals so we can
-     * juste don't insert a state when the state is None.
+     * By default, every column in Cassandra is optional, so we don't
+     * have to insert a state when the state is None.
      */
     def insert(tableName: String)(session: CqlSession): Unit = {
       val baseQuery: RegularInsert =
@@ -122,12 +124,12 @@ object _01_basic_operations {
     val TABLE_BY_COUNTRY = "climates_by_country"
 
     /**
-     * This is a helper function to convert a cassandra row in a
-     * Temperature. Because a row can be anything we have to handle the
+     * This is a helper function to convert a Cassandra row into a
+     * Temperature. Because a row can be anything, we have to handle the
      * case when we have a row that doesn't correspond to a temperature,
-     * thus returning an '''Option[Temperature]'''.
+     * thus returning an '''Try[Temperature]'''.
      */
-    def fromCassandra(row: Row): Option[Temperature] =
+    def fromCassandra(row: Row): Try[Temperature] =
       Try(
         Temperature(
           region             = row.getString("region"),
@@ -139,7 +141,7 @@ object _01_basic_operations {
           year               = row.getInt("year"),
           averageTemperature = row.getFloat("averageTemperature")
         )
-      ).toOption
+      )
 
     def createTableByYear(session: CqlSession): Unit = {
       val query =
@@ -181,13 +183,14 @@ object _01_basic_operations {
     private def retrieve(query: Select)(session: CqlSession): List[Temperature] = {
       val statement         = query.build
       val result: ResultSet = session.execute(statement)
-      result.all().asScala.toList.map(fromCassandra).collect { case Some(v) => v }
+
+      result.all().asScala.toList.map(fromCassandra).collect { case Success(v) => v }
     }
 
     /**
-     * For our first query, we decided to use '''year''' as our
-     * partition key allowing use to extract fastly all the temperatures
-     * for a particular year.
+     * In our first query, we decided to use '''year''' as our partition
+     * key, allowing us to extract quickly all the temperatures for a
+     * particular year.
      */
     def retrieveByYear(year: Int)(session: CqlSession): List[Temperature] = {
       val query =
@@ -214,11 +217,13 @@ object _01_basic_operations {
      * We provide a dataset with a lot of temperatures stored in a CSV.
      *
      * Here is an example of data contained in the file:
+     * {{{
      * Region,Country,State,City,Month,Day,Year,AverageTemperature
      * Asia,Kazakhstan,,Almaty,2,22,2010,34.0
      * Asia,Kazakhstan,,Almaty,2,23,2010,30.7
      * Asia,Kazakhstan,,Almaty,2,24,2010,34.1
      * Asia,Kazakhstan,,Almaty,2,25,2010,32.7
+     * }}}
      *
      * We convert them into temperatures and then we insert them into
      * Cassandra.
@@ -254,9 +259,9 @@ object _01_basic_operations {
       exercise("Create a keyspace") {
 
         /**
-         * The beginning of a Cassandra journey is creating a keyspace,
-         * since we have only one node, we ask the system to replicate
-         * the data only once. The keyspace will be used to then create
+         * The beginning of a Cassandra journey is creating a keyspace.
+         * Since we only have one node, we ask the system to replicate
+         * the data only once. The keyspace will be used then to create
          * tables.
          */
         val keyspaceQuery =
@@ -283,13 +288,13 @@ object _01_basic_operations {
          * a temperature has many field such as the average temperature
          * or the locations.
          *
-         * For our first query, we want to retrieve the temperatures per
+         * In our first query, we want to retrieve the temperatures per
          * year. Thus, we decide that '''year''' is our partition key.
          * We may want to sort our data inside the partitions so we had
-         * a clustering key composed by month, day and city.
+         * a clustering key composed with month, day, and city.
          *
-         * Partition key and the clustering keys form the primary key.
-         * It has to be unique inside our cluster.
+         * The partition key and the clustering keys form the primary
+         * key. It has to be unique inside our cluster.
          */
         Temperature.createTableByYear(session)
       }
@@ -297,7 +302,8 @@ object _01_basic_operations {
       exercise("Insert a temperature") {
 
         /**
-         * We now want to insert a temperature in our newly create table
+         * We now want to insert a temperature in our newly create
+         * table.
          */
         val temperature: Temperature =
           Temperature(
@@ -321,6 +327,7 @@ object _01_basic_operations {
          * through our helper function.
          */
         val temperatures = Temperature.retrieveByYear(2020)(session)
+
         check(temperatures.length == 1)
         check(temperatures.head.country == "Minecraft")
       }
@@ -328,6 +335,7 @@ object _01_basic_operations {
       exercise("Insert temperatures from data/climate/city_temperature.csv.gz") {
         insertCityTemperature(Temperature.TABLE_BY_YEAR)(session)
         val temperatures = Temperature.retrieveByYear(2000)(session)
+
         check(temperatures.length == 366)
       }
 
@@ -335,8 +343,10 @@ object _01_basic_operations {
         Temperature.createTableByCountry(session)
         insertCityTemperature(Temperature.TABLE_BY_COUNTRY)(session)
         val temperatures = Temperature.retrieveByCountry("Algeria")(session)
+
         check(temperatures.length == 9265)
         check(temperatures.map(_.country).distinct.length == 1)
       }
     }
+
 }
