@@ -2,14 +2,22 @@ package io.univalence.dataeng._04_cassandra_db
 
 import com.datastax.oss.driver.api.core.`type`.DataTypes
 import com.datastax.oss.driver.api.core.{CqlIdentifier, CqlSession}
-import com.datastax.oss.driver.api.core.cql.{BoundStatement, PreparedStatement, ResultSet, SimpleStatement}
-import com.datastax.oss.driver.api.querybuilder.{QueryBuilder, SchemaBuilder}
+import com.datastax.oss.driver.api.core.cql.{ResultSet, Row, SimpleStatement}
+import com.datastax.oss.driver.api.querybuilder.QueryBuilder._
+import com.datastax.oss.driver.api.querybuilder.SchemaBuilder
 import com.datastax.oss.driver.api.querybuilder.insert.RegularInsert
+import com.datastax.oss.driver.api.querybuilder.relation.Relation._
+import com.datastax.oss.driver.api.querybuilder.select.Select
 
 import io.univalence.dataeng._04_cassandra_db.CassandraConnector._
 import io.univalence.dataeng.internal.exercise_tools._
 
-import java.time.LocalDate
+import scala.io.Source
+import scala.jdk.CollectionConverters.CollectionHasAsScala
+import scala.util.{Try, Using}
+
+import java.io.FileInputStream
+import java.util.zip.GZIPInputStream
 
 /**
  * =Cassandra=
@@ -67,22 +75,182 @@ import java.time.LocalDate
  *   - You then have an exercise to interact with Cassandra.
  */
 object _01_basic_operations {
-  val tableName: String = "videos"
 
-  case class Video(id: Int, title: String, date: LocalDate, creator: String)
+  case class Temperature(
+      region:             String,
+      country:            String,
+      state:              Option[String],
+      city:               String,
+      month:              Int,
+      day:                Int,
+      year:               Int,
+      averageTemperature: Float
+  ) {
 
-  def main(args: Array[String]): Unit = {
-    def executeStatement(statement: SimpleStatement)(implicit session: CqlSession, keyspace: String): ResultSet = {
-      statement.setKeyspace(CqlIdentifier.fromCql(keyspace))
+    /**
+     * We provide this function to insert an instance of Temperature
+     * inside Cassandra. Because ''state'' is Optional, we have to
+     * handle both case when there is a state or not.
+     *
+     * By default, every column in Cassandra are optionals so we can
+     * juste don't insert a state when the state is None.
+     */
+    def insert(tableName: String)(session: CqlSession): Unit = {
+      val baseQuery: RegularInsert =
+        insertInto(tableName)
+          .value("year", literal(year))
+          .value("month", literal(month))
+          .value("day", literal(day))
+          .value("averageTemperature", literal(averageTemperature))
+          .value("region", literal(region))
+          .value("country", literal(country))
+          .value("city", literal(city))
+
+      val query =
+        state match {
+          case None    => baseQuery
+          case Some(s) => baseQuery.value("state", literal(s))
+        }
+
+      val statement: SimpleStatement = query.build
+      session.execute(statement)
+    }
+  }
+
+  object Temperature {
+    val TABLE_BY_YEAR    = "climates_by_year"
+    val TABLE_BY_COUNTRY = "climates_by_country"
+
+    /**
+     * This is a helper function to convert a cassandra row in a
+     * Temperature. Because a row can be anything we have to handle the
+     * case when we have a row that doesn't correspond to a temperature,
+     * thus returning an '''Option[Temperature]'''.
+     */
+    def fromCassandra(row: Row): Option[Temperature] =
+      Try(
+        Temperature(
+          region             = row.getString("region"),
+          country            = row.getString("country"),
+          state              = Option(row.getString("state")),
+          city               = row.getString("city"),
+          month              = row.getInt("month"),
+          day                = row.getInt("day"),
+          year               = row.getInt("year"),
+          averageTemperature = row.getFloat("averageTemperature")
+        )
+      ).toOption
+
+    def createTableByYear(session: CqlSession): Unit = {
+      val query =
+        SchemaBuilder
+          .createTable(TABLE_BY_YEAR)
+          .ifNotExists()
+          .withPartitionKey("year", DataTypes.INT)
+          .withClusteringColumn("month", DataTypes.INT)
+          .withClusteringColumn("day", DataTypes.INT)
+          .withColumn("averageTemperature", DataTypes.FLOAT)
+          .withColumn("region", DataTypes.TEXT)
+          .withColumn("country", DataTypes.TEXT)
+          .withColumn("state", DataTypes.TEXT)
+          .withClusteringColumn("city", DataTypes.TEXT)
+
+      val statement: SimpleStatement = query.build
       session.execute(statement)
     }
 
-    /** FIXME explain */
-    usingCassandra { session =>
-      /** FIXME remove implicits */
-      implicit val implicitSession: CqlSession = session
-      implicit val implicitKeySpace: String    = cassandraKeyspace
+    // TODO by student
+    def createTableByCountry(session: CqlSession): Unit = {
+      val query =
+        SchemaBuilder
+          .createTable(TABLE_BY_COUNTRY)
+          .ifNotExists()
+          .withPartitionKey("country", DataTypes.TEXT)
+          .withClusteringColumn("year", DataTypes.INT)
+          .withClusteringColumn("month", DataTypes.INT)
+          .withClusteringColumn("day", DataTypes.INT)
+          .withClusteringColumn("city", DataTypes.TEXT)
+          .withColumn("averageTemperature", DataTypes.FLOAT)
+          .withColumn("region", DataTypes.TEXT)
+          .withColumn("state", DataTypes.TEXT)
 
+      val statement: SimpleStatement = query.build
+      session.execute(statement)
+    }
+
+    private def retrieve(query: Select)(session: CqlSession): List[Temperature] = {
+      val statement         = query.build
+      val result: ResultSet = session.execute(statement)
+      result.all().asScala.toList.map(fromCassandra).collect { case Some(v) => v }
+    }
+
+    /**
+     * For our first query, we decided to use '''year''' as our
+     * partition key allowing use to extract fastly all the temperatures
+     * for a particular year.
+     */
+    def retrieveByYear(year: Int)(session: CqlSession): List[Temperature] = {
+      val query =
+        selectFrom(TABLE_BY_YEAR)
+          .all()
+          .where(column("year").isEqualTo(literal(year)))
+      retrieve(query)(session)
+    }
+
+    // TODO by student
+    def retrieveByCountry(country: String)(session: CqlSession): List[Temperature] = {
+      val query =
+        selectFrom(TABLE_BY_COUNTRY)
+          .all()
+          .where(column("country").isEqualTo(literal(country)))
+      retrieve(query)(session)
+    }
+  }
+
+  def insertCityTemperature(tableName: String)(session: CqlSession): Unit = {
+    val inputStream = new GZIPInputStream(new FileInputStream("data/climate/city_temperature.csv.gz"))
+
+    /**
+     * We provide a dataset with a lot of temperatures stored in a CSV.
+     *
+     * Here is an example of data contained in the file:
+     * Region,Country,State,City,Month,Day,Year,AverageTemperature
+     * Asia,Kazakhstan,,Almaty,2,22,2010,34.0
+     * Asia,Kazakhstan,,Almaty,2,23,2010,30.7
+     * Asia,Kazakhstan,,Almaty,2,24,2010,34.1
+     * Asia,Kazakhstan,,Almaty,2,25,2010,32.7
+     *
+     * We convert them into temperatures and then we insert them into
+     * Cassandra.
+     */
+    try Using(Source.fromInputStream(inputStream)) { file =>
+      for (line <- file.getLines().toSeq.tail.take(10000))
+        try {
+          val columns = line.split(",")
+          val temperature =
+            Temperature(
+              region             = columns(0),
+              country            = columns(1),
+              state              = if (columns(2).nonEmpty) Some(columns(2)) else None,
+              city               = columns(3),
+              month              = columns(4).toInt,
+              day                = columns(5).toInt,
+              year               = columns(6).toInt,
+              averageTemperature = columns(7).toFloat
+            )
+          temperature.insert(tableName)(session)
+        }
+    }
+  }
+
+  def main(args: Array[String]): Unit =
+    /**
+     * The function '''usingCassandra''' is an utility that:
+     *   - creates a Cassandra cluster with one node in docker
+     *   - creates a Cassandra session to interact with the cluster
+     *   - provides the session
+     */
+    usingCassandra { session =>
       exercise("Create a keyspace") {
 
         /**
@@ -110,77 +278,65 @@ object _01_basic_operations {
       exercise("Create a table") {
 
         /**
-         * We want to store video data. Imagine that you are a company
-         * such as Youtube with millions of videos. We first need to
-         * create a table containing the schema describing an item. In
-         * our case, a video has an id, a title and a creation date.
-         * Since we want to request the data by ID, we define the ID has
-         * our partition key.
+         * We want to store temperature data. We first need to create a
+         * table containing the schema describing an item. In our case,
+         * a temperature has many field such as the average temperature
+         * or the locations.
+         *
+         * For our first query, we want to retrieve the temperatures per
+         * year. Thus, we decide that '''year''' is our partition key.
+         * We may want to sort our data inside the partitions so we had
+         * a clustering key composed by month, day and city.
+         *
+         * Partition key and the clustering keys form the primary key.
+         * It has to be unique inside our cluster.
          */
-        val createTable =
-          SchemaBuilder
-            .createTable(tableName)
-            .ifNotExists()
-            .withPartitionKey("video_id", DataTypes.INT)
-            .withColumn("title", DataTypes.TEXT)
-            .withColumn("creation_date", DataTypes.DATE)
-
-        executeStatement(createTable.build)
+        Temperature.createTableByYear(session)
       }
 
-      exercise("Insert a video") {
-
-        /** We now want to insert a video in our newly create table */
-        val video: Video = Video(1, "My video", LocalDate.now(), "Jon")
-
-        val insertInto: RegularInsert =
-          QueryBuilder
-            .insertInto(tableName)
-            .value("video_id", QueryBuilder.bindMarker)
-            .value("title", QueryBuilder.bindMarker)
-            .value("creation_date", QueryBuilder.bindMarker)
-            .value("creator_name", QueryBuilder.bindMarker)
-
-        val insertStatement: SimpleStatement     = insertInto.build
-        val preparedStatement: PreparedStatement = session.prepare(insertStatement)
-        val statement: BoundStatement =
-          preparedStatement
-            .bind()
-            .setInt(0, video.id)
-            .setString(1, video.title)
-            .setLocalDate(2, video.date)
-            .setString(3, video.creator)
-
-        session.execute(statement)
-      }
-
-      exercise("Retrieve a video") {
+      exercise("Insert a temperature") {
 
         /**
-         * We can retrieve our newly inserted video using its partition
-         * key.
+         * We now want to insert a temperature in our newly create table
          */
-        val query     = QueryBuilder.selectFrom(tableName).columns("video_id", "title", "creation_date", "creator_name")
-        val statement = query.build
-        val result: ResultSet = session.execute(statement)
-        val first             = result.one()
-        val storedVideo =
-          Video(
-            id      = first.getInt("video_id"),
-            title   = first.getString("title"),
-            date    = first.getLocalDate("creation_date"),
-            creator = first.getString("creator_name")
+        val temperature: Temperature =
+          Temperature(
+            region             = "Neither",
+            country            = "Minecraft",
+            state              = None,
+            city               = "Crimson Forest",
+            month              = 10,
+            day                = 20,
+            year               = 2020,
+            averageTemperature = 37.3f
           )
-        println(s"The stored video was $storedVideo.")
+
+        temperature.insert(Temperature.TABLE_BY_YEAR)(session)
       }
 
-      exercise("Design a table to query video by creator name sorted by creation date.") {
-        ???
+      exercise("Retrieve a temperature") {
+
+        /**
+         * Now that our temperature is stored, we can retrieve it
+         * through our helper function.
+         */
+        val temperatures = Temperature.retrieveByYear(2020)(session)
+        check(temperatures.length == 1)
+        check(temperatures.head.country == "Minecraft")
       }
 
-      exercise("Design a table to query video by creation date.") {
-        ???
+      exercise("Insert temperatures from data/climate/city_temperature.csv.gz") {
+        insertCityTemperature(Temperature.TABLE_BY_YEAR)(session)
+        val temperatures = Temperature.retrieveByYear(2000)(session)
+        check(temperatures.length == 366)
+      }
+
+      exercise("Design a table to query temperatures of a particular country (Algeria).") {
+        Temperature.createTableByCountry(session)
+        insertCityTemperature(Temperature.TABLE_BY_COUNTRY)(session)
+        val temperatures = Temperature.retrieveByCountry("Algeria")(session)
+        check(temperatures.length == 9265)
+        check(temperatures.map(_.country).distinct.length == 1)
       }
     }
-  }
 }

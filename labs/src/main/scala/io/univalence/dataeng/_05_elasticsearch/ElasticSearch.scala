@@ -11,13 +11,13 @@ import scala.reflect.{classTag, ClassTag}
 object ElasticSearch {
 
   /** Returns the number of documents of an index. */
-  def countIndex(name: String)(implicit client: ElasticsearchClient): Long = {
+  def countIndex(name: String)(client: ElasticsearchClient): Long = {
     val countRequest: CountRequest = new CountRequest.Builder().index(name).build()
     client.count(countRequest).count()
   }
 
   /** Generalizes the query process to retrieves objects of type T. */
-  def search[T: ClassTag](query: Query, index: String)(implicit client: ElasticsearchClient): HitsMetadata[T] = {
+  def search[T: ClassTag](query: Query, index: String)(client: ElasticsearchClient): HitsMetadata[T] = {
     val searchRequest: SearchRequest = new SearchRequest.Builder().index(index).query(query).build()
     val searchResponse: SearchResponse[T] =
       client.search(searchRequest, classTag[T].runtimeClass.asInstanceOf[Class[T]])

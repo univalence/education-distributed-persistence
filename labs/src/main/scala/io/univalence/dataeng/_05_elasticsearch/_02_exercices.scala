@@ -76,7 +76,7 @@ object _02_exercices {
           val fieldValue: FieldValue           = new FieldValue.Builder().stringValue(userInput).build()
           val matchSubquery: MatchQuery        = new MatchQuery.Builder().field("kind").query(fieldValue).build()
           val matchQuery: Query                = new Query.Builder().`match`(matchSubquery).build()
-          val matchHits: HitsMetadata[Product] = search(matchQuery, index)
+          val matchHits: HitsMetadata[Product] = search(matchQuery, index)(client)
           hitsToList(matchHits)
         }
 
@@ -94,7 +94,7 @@ object _02_exercices {
           val matchSubquery: MatchQuery =
             new MatchQuery.Builder().field("brand").fuzziness("2").query(fieldValue).build()
           val matchQuery: Query                = new Query.Builder().`match`(matchSubquery).build()
-          val matchHits: HitsMetadata[Product] = search(matchQuery, index)
+          val matchHits: HitsMetadata[Product] = search(matchQuery, index)(client)
           hitsToList(matchHits)
         }
 
@@ -109,7 +109,7 @@ object _02_exercices {
           val rangeQuery: RangeQuery =
             new RangeQuery.Builder().field("price").gt(JsonData.of(from)).lt(JsonData.of(to)).build()
           val matchQuery: Query                = new Query.Builder().range(rangeQuery).build()
-          val matchHits: HitsMetadata[Product] = search(matchQuery, index)
+          val matchHits: HitsMetadata[Product] = search(matchQuery, index)(client)
           hitsToList(matchHits)
         }
 

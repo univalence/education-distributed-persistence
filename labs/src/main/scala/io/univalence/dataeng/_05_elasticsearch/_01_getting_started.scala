@@ -58,8 +58,6 @@ object _01_getting_started {
 
   def main(args: Array[String]): Unit =
     usingElasticSearch { (client, mapper) =>
-      implicit val implicitClient: ElasticsearchClient = client
-
       /**
        * ==Index==
        * Indexes are like database in a relational database. Indexes
@@ -121,7 +119,7 @@ object _01_getting_started {
        * We need to wait for BulkOperation to be processed by
        * ElasticSearch.
        */
-      val tweetsAdded = retry(countIndex(index))(_ > 0L)(5)
+      val tweetsAdded = retry(countIndex(index)(client))(_ > 0L)(5)
 
       tweetsAdded match {
         case Some(v) => println(s"$v tweets added to elasticsearch\n")
@@ -160,7 +158,7 @@ object _01_getting_started {
        */
       val matchAll: MatchAllQuery           = new MatchAllQuery.Builder().build()
       val matchAllQuery: Query              = new Query.Builder().matchAll(matchAll).build()
-      val matchAllHits: HitsMetadata[Tweet] = search(matchAllQuery, index)
+      val matchAllHits: HitsMetadata[Tweet] = search(matchAllQuery, index)(client)
       printHitsInformation("Match All", matchAllHits)
 
       /**
@@ -170,7 +168,7 @@ object _01_getting_started {
       val fieldValue: FieldValue         = new FieldValue.Builder().stringValue("computer").build()
       val matchSubquery: MatchQuery      = new MatchQuery.Builder().field("text").query(fieldValue).build()
       val matchQuery: Query              = new Query.Builder().`match`(matchSubquery).build()
-      val matchHits: HitsMetadata[Tweet] = search(matchQuery, index)
+      val matchHits: HitsMetadata[Tweet] = search(matchQuery, index)(client)
       printHitsInformation("Match", matchHits)
     }
 }
