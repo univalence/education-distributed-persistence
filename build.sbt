@@ -1,4 +1,5 @@
-name := "distributed-persistence"
+ThisBuild / name         := "distributed-persistence"
+ThisBuild / scalaVersion := "2.13.8"
 
 val libVersion =
   new {
@@ -7,6 +8,7 @@ val libVersion =
     val gson           = "2.9.1"
     val jackson        = "2.13.3"
     val javaSpark      = "2.9.4"
+    val kafka          = "3.2.1"
     val logback        = "1.2.11"
     val mapdb          = "3.0.8"
     val okhttp         = "4.10.0"
@@ -19,14 +21,64 @@ val libVersion =
 
 lazy val root =
   (project in file("."))
-    .aggregate(benchmark, labs, `labs-macro`)
+    .aggregate(
+      benchmark,
+      labs,
+      `labs-macro`,
+      `microservice-common`,
+      `microservice-ingest`,
+      `microservice-process`,
+      `microservice-api`
+    )
+
+lazy val `microservice-common` =
+  (project in file("microservice/common"))
+    .settings(
+      name := "microservice-common",
+      libraryDependencies ++= Seq(
+        "com.google.code.gson" % "gson"             % libVersion.gson,
+        "com.datastax.oss"     % "java-driver-core" % libVersion.cassandra
+      )
+    )
+
+lazy val `microservice-ingest` =
+  (project in file("microservice/ingest"))
+    .settings(
+      name := "microservice-ingest",
+      libraryDependencies ++= Seq(
+        "com.sparkjava"    % "spark-core"    % libVersion.javaSpark,
+        "org.apache.kafka" % "kafka-clients" % libVersion.kafka
+      )
+    )
+    .dependsOn(`microservice-common`)
+
+lazy val `microservice-process` =
+  (project in file("microservice/process"))
+    .settings(
+      name := "microservice-process",
+      libraryDependencies ++= Seq(
+        "org.apache.kafka" % "kafka-clients"    % libVersion.kafka,
+        "com.datastax.oss" % "java-driver-core" % libVersion.cassandra
+      )
+    )
+    .dependsOn(`microservice-common`)
+
+lazy val `microservice-api` =
+  (project in file("microservice/api"))
+    .settings(
+      name := "microservice-api",
+      libraryDependencies ++= Seq(
+        "com.sparkjava"    % "spark-core"       % libVersion.javaSpark,
+        "com.datastax.oss" % "java-driver-core" % libVersion.cassandra
+      )
+    )
+    .dependsOn(`microservice-common`)
 
 lazy val benchmark =
   (project in file("benchmark"))
     .enablePlugins(JmhPlugin)
     .settings(
-      name := "benchmark",
-      commonSettings
+      name := "benchmark"
     )
     .dependsOn(labs)
 
@@ -34,7 +86,6 @@ lazy val labs =
   (project in file("labs"))
     .settings(
       name := "labs",
-      commonSettings,
       libraryDependencies ++= Seq(
         "com.sparkjava"                 % "spark-core"                % libVersion.javaSpark,
         "com.squareup.okhttp3"          % "okhttp"                    % libVersion.okhttp,
@@ -61,13 +112,7 @@ lazy val `labs-macro` =
   (project in file("labs-macro"))
     .settings(
       name := "labs-macro",
-      commonSettings,
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value
       )
     )
-
-val commonSettings =
-  Def.settings(
-    scalaVersion := "2.13.8"
-  )
