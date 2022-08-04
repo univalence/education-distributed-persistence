@@ -1,5 +1,22 @@
 name := "distributed-persistence"
 
+val libVersion =
+  new {
+    val cassandra      = "4.14.1"
+    val elasticsearch  = "8.3.3"
+    val gson           = "2.9.1"
+    val jackson        = "2.13.3"
+    val javaSpark      = "2.9.4"
+    val logback        = "1.2.11"
+    val mapdb          = "3.0.8"
+    val okhttp         = "4.10.0"
+    val rocksdb        = "7.4.4"
+    val scalatest      = "3.2.13"
+    val slf4j          = "1.7.36"
+    val testcontainers = "1.17.3"
+    val typsafeConfig  = "1.4.2"
+  }
+
 lazy val root =
   (project in file("."))
     .aggregate(benchmark, labs, `labs-macro`)
@@ -19,23 +36,23 @@ lazy val labs =
       name := "labs",
       commonSettings,
       libraryDependencies ++= Seq(
-        "com.sparkjava"                 % "spark-core"                % "2.9.3",
-        "com.squareup.okhttp3"          % "okhttp"                    % "4.9.3",
-        "com.google.code.gson"          % "gson"                      % "2.8.9",
-        "org.slf4j"                     % "slf4j-api"                 % "1.7.32",
-        "ch.qos.logback"                % "logback-classic"           % "1.2.10",
-        "co.elastic.clients"            % "elasticsearch-java"        % "7.16.3",
-        "com.fasterxml.jackson.core"    % "jackson-databind"          % "2.12.3",
-        "com.fasterxml.jackson.module" %% "jackson-module-scala"      % "2.13.1",
-        "org.testcontainers"            % "testcontainers"            % "1.16.3",
-        "org.testcontainers"            % "elasticsearch"             % "1.16.3",
-        "org.testcontainers"            % "cassandra"                 % "1.16.3",
-        "org.rocksdb"                   % "rocksdbjni"                % "6.28.2",
-        "org.mapdb"                     % "mapdb"                     % "3.0.8",
-        "com.datastax.oss"              % "java-driver-core"          % "4.5.0",
-        "com.datastax.oss"              % "java-driver-query-builder" % "4.5.0",
-        "com.typesafe"                  % "config"                    % "1.4.2",
-        "org.scalatest"                %% "scalatest"                 % "3.2.9" % Test
+        "com.sparkjava"                 % "spark-core"                % libVersion.javaSpark,
+        "com.squareup.okhttp3"          % "okhttp"                    % libVersion.okhttp,
+        "com.google.code.gson"          % "gson"                      % libVersion.gson,
+        "org.slf4j"                     % "slf4j-api"                 % libVersion.slf4j,
+        "ch.qos.logback"                % "logback-classic"           % libVersion.logback,
+        "co.elastic.clients"            % "elasticsearch-java"        % libVersion.elasticsearch,
+        "com.fasterxml.jackson.core"    % "jackson-databind"          % libVersion.jackson,
+        "com.fasterxml.jackson.module" %% "jackson-module-scala"      % libVersion.jackson,
+        "org.testcontainers"            % "testcontainers"            % libVersion.testcontainers,
+        "org.testcontainers"            % "elasticsearch"             % libVersion.testcontainers,
+        "org.testcontainers"            % "cassandra"                 % libVersion.testcontainers,
+        "org.rocksdb"                   % "rocksdbjni"                % libVersion.rocksdb,
+        "org.mapdb"                     % "mapdb"                     % libVersion.mapdb,
+        "com.datastax.oss"              % "java-driver-core"          % libVersion.cassandra,
+        "com.datastax.oss"              % "java-driver-query-builder" % libVersion.cassandra,
+        "com.typesafe"                  % "config"                    % libVersion.typsafeConfig,
+        "org.scalatest"                %% "scalatest"                 % libVersion.scalatest % Test
       )
     )
     .dependsOn(`labs-macro`)
