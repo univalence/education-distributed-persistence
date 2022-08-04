@@ -11,7 +11,7 @@ import scala.reflect.{classTag, ClassTag}
 object ElasticSearch {
 
   /** Returns the number of documents of an index. */
-  def countIndex(name: String)(client: ElasticsearchClient): Long = {
+  def countIndex(name: String)(implicit client: ElasticsearchClient): Long = {
     val countRequest: CountRequest = new CountRequest.Builder().index(name).build()
     client.count(countRequest).count()
   }

@@ -228,9 +228,8 @@ object _01_basic_operations {
      * We convert them into temperatures and then we insert them into
      * Cassandra.
      */
-    try Using(Source.fromInputStream(inputStream)) { file =>
-      for (line <- file.getLines().toSeq.tail.take(10000))
-        try {
+    Using(Source.fromInputStream(inputStream)) { file =>
+      for (line <- file.getLines().toSeq.tail.take(10000)) {
           val columns = line.split(",")
           val temperature =
             Temperature(

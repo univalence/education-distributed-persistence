@@ -144,6 +144,8 @@ object _01_skiplist {
    * TODO complete the implementation below
    */
   class SkipListKeyValueStore[K: Ordering, V] extends KeyValueStore[K, V] {
+    import scala.jdk.CollectionConverters._
+
     val data = new ConcurrentSkipListMap[K, V]((k1: K, k2: K) => Ordering[K].compare(k1, k2))
 
     override def put(key: K, value: V): Unit = ???
