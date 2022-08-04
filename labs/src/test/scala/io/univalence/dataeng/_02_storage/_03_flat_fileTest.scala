@@ -2,6 +2,7 @@ package io.univalence.dataeng._02_storage
 
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuiteLike
+
 import io.univalence.dataeng._02_storage.pseudobin.pseudobin._
 import io.univalence.dataeng._02_storage.pseudobin.pseudobin.PseudobinSerde._
 
@@ -38,7 +39,7 @@ class _03_flat_fileTest extends AnyFunSuiteLike with BeforeAndAfterAll {
   }
 
   test("should not retrieve an unregistered id") {
-    val id   = "inexisting"
+    val id = "inexisting"
 
     val result = db.get(id)
 

@@ -1,8 +1,8 @@
 package io.univalence.dataeng._02_storage._01_memory
 
-import scala.util.Random
-
 import org.openjdk.jmh.annotations._
+
+import scala.util.Random
 
 @State(Scope.Thread)
 //@BenchmarkMode(Array(Mode.Throughput))

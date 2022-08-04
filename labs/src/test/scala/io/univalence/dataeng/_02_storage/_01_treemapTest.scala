@@ -52,7 +52,7 @@ class _01_treemapTest extends AnyFunSuiteLike {
   test("get the minimal key") {
     val store = generateStore()
 
-    val jon = User("123", "Jon", 25)
+    val jon  = User("123", "Jon", 25)
     val mary = User("456", "Mary", 22)
 
     store.put("A", jon)
@@ -64,7 +64,7 @@ class _01_treemapTest extends AnyFunSuiteLike {
   test("get the maximal key") {
     val store = generateStore()
 
-    val jon = User("123", "Jon", 25)
+    val jon  = User("123", "Jon", 25)
     val mary = User("456", "Mary", 22)
 
     store.put("A", jon)
@@ -76,9 +76,9 @@ class _01_treemapTest extends AnyFunSuiteLike {
   test("get a range with bounds included") {
     val store = generateStore()
 
-    val jon = User("123", "Jon", 25)
-    val mary = User("456", "Mary", 22)
-    val tom = User("789", "Tom", 35)
+    val jon   = User("123", "Jon", 25)
+    val mary  = User("456", "Mary", 22)
+    val tom   = User("789", "Tom", 35)
     val ellen = User("987", "Ellen", 45)
 
     store.put("A", jon)
@@ -86,18 +86,20 @@ class _01_treemapTest extends AnyFunSuiteLike {
     store.put("C", tom)
     store.put("D", ellen)
 
-    assert(store.range("B", "C").toList == List(
-      ("B", mary),
-      ("C", tom),
-    ))
+    assert(
+      store.range("B", "C").toList == List(
+        ("B", mary),
+        ("C", tom)
+      )
+    )
   }
 
   test("get a range with bounds not in store") {
     val store = generateStore()
 
-    val jon = User("123", "Jon", 25)
-    val mary = User("456", "Mary", 22)
-    val tom = User("789", "Tom", 35)
+    val jon   = User("123", "Jon", 25)
+    val mary  = User("456", "Mary", 22)
+    val tom   = User("789", "Tom", 35)
     val ellen = User("987", "Ellen", 45)
 
     store.put("A", jon)
@@ -105,10 +107,12 @@ class _01_treemapTest extends AnyFunSuiteLike {
     store.put("F", tom)
     store.put("P", ellen)
 
-    assert(store.range("B", "H").toList == List(
-      ("C", mary),
-      ("F", tom),
-    ))
+    assert(
+      store.range("B", "H").toList == List(
+        ("C", mary),
+        ("F", tom)
+      )
+    )
   }
 
   case class User(id: String, name: String, age: Int)

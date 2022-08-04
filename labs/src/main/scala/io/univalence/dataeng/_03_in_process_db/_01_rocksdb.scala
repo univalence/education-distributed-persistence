@@ -392,7 +392,6 @@ object _02_time_series_read_data {
 
     Using(new Options().setCreateIfMissing(false)) { options =>
       Using(RocksDB.open(options, _02_time_series_load_data.databaseFile.getPath)) { database =>
-
         exercise_ignore("Get the whole content of the time series") {
 
           /**

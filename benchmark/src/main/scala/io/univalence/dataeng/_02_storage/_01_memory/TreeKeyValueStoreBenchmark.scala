@@ -1,19 +1,20 @@
 package io.univalence.dataeng._02_storage._01_memory
 
-import io.univalence.dataeng._02_storage._01_treemap.TreeKeyValueStore
 import org.openjdk.jmh.annotations._
+
+import io.univalence.dataeng._02_storage._01_treemap.TreeKeyValueStore
 
 @State(Scope.Thread)
 @BenchmarkMode(Array(Mode.Throughput))
 class TreeKeyValueStoreBenchmark {
 
-  var user: User = _
+  var user: User                          = _
   var db: TreeKeyValueStore[String, User] = _
 
   @Setup
   def setup(): Unit = {
     user = User("123", "Jon", Some(32))
-    db = new TreeKeyValueStore()
+    db   = new TreeKeyValueStore()
     db.put("456", User("456", "Mary", None))
   }
 

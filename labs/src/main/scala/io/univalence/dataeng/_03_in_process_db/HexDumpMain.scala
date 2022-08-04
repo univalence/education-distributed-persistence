@@ -3,6 +3,7 @@ package io.univalence.dataeng._03_in_process_db
 import io.univalence.dataeng.internal.exercise_tools
 
 import scala.util.Using
+
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.{Paths, StandardOpenOption}

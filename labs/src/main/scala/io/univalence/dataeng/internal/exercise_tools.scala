@@ -32,8 +32,8 @@ object exercise_tools {
 
       println(
         partIndent + s"""${Console.MAGENTA}>>> Elapsed time for "$label": ${Console.RED}${displayTime(
-          delta
-        )}${Console.RESET}"""
+            delta
+          )}${Console.RESET}"""
       )
     }
   }
@@ -83,7 +83,9 @@ object exercise_tools {
       val paddingSize = lineSize - data.length
       val padding     = " " * (paddingSize * 3 + (paddingSize / packSize) * 2)
 
-      println(s"${Console.YELLOW}$offsetLine${Console.RESET}  $hexLine $padding |${Console.BOLD}$charLine${Console.RESET}|")
+      println(
+        s"${Console.YELLOW}$offsetLine${Console.RESET}  $hexLine $padding |${Console.BOLD}$charLine${Console.RESET}|"
+      )
     }
 
     if (data.length > lineSize) {

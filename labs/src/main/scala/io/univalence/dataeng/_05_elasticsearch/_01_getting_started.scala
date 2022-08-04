@@ -84,34 +84,36 @@ object _01_getting_started {
        */
       val inputStream = new GZIPInputStream(new FileInputStream("data/twitter/tweets.json.gz"))
 
-      try Using(Source.fromInputStream(inputStream)) { file =>
-        val operations: java.util.ArrayList[BulkOperation] = new java.util.ArrayList[BulkOperation]()
+      try
+        Using(Source.fromInputStream(inputStream)) { file =>
+          val operations: java.util.ArrayList[BulkOperation] = new java.util.ArrayList[BulkOperation]()
 
-        for (line <- file.getLines())
-          try {
-            val tweet: Tweet = mapper.reader.readValue(line, classOf[Tweet])
-            val id           = tweet.id
+          for (line <- file.getLines())
+            try {
+              val tweet: Tweet = mapper.reader.readValue(line, classOf[Tweet])
+              val id           = tweet.id
 
-            val indexOperation: IndexOperation[Tweet] =
-              new IndexOperation.Builder()
-                .index(index)
-                .id(id)
-                .document(tweet)
-                .build()
+              val indexOperation: IndexOperation[Tweet] =
+                new IndexOperation.Builder()
+                  .index(index)
+                  .id(id)
+                  .document(tweet)
+                  .build()
 
-            operations.add(new BulkOperation.Builder().index(indexOperation).build())
-          } catch {
-            /**
-             * Some tweets are not well formatted for Jackson since it
-             * is for educational purpose, we ignore them.
-             */
-            case _: JsonParseException => ()
-            case e: Exception          => e.printStackTrace()
-          }
+              operations.add(new BulkOperation.Builder().index(indexOperation).build())
+            } catch {
+              /**
+               * Some tweets are not well formatted for Jackson since it
+               * is for educational purpose, we ignore them.
+               */
+              case _: JsonParseException => ()
+              case e: Exception          => e.printStackTrace()
+            }
 
-        val bulkRequest = new BulkRequest.Builder().operations(operations).build()
-        client.bulk(bulkRequest)
-      } catch {
+          val bulkRequest = new BulkRequest.Builder().operations(operations).build()
+          client.bulk(bulkRequest)
+        }
+      catch {
         case e: Exception => e.printStackTrace()
       }
 

@@ -120,7 +120,6 @@ object _01_simple_web_service {
       "/hello",
       // Associated process
       { (request: Request, response: Response) =>
-
         /**
          * By default, Spark sends HTML. So if we want the response to
          * be interpreted as JSON, we have to change the type.

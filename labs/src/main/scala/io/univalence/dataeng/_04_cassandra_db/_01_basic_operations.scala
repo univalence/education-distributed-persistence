@@ -230,20 +230,20 @@ object _01_basic_operations {
      */
     Using(Source.fromInputStream(inputStream)) { file =>
       for (line <- file.getLines().toSeq.tail.take(10000)) {
-          val columns = line.split(",")
-          val temperature =
-            Temperature(
-              region             = columns(0),
-              country            = columns(1),
-              state              = if (columns(2).nonEmpty) Some(columns(2)) else None,
-              city               = columns(3),
-              month              = columns(4).toInt,
-              day                = columns(5).toInt,
-              year               = columns(6).toInt,
-              averageTemperature = columns(7).toFloat
-            )
-          temperature.insert(tableName)(session)
-        }
+        val columns = line.split(",")
+        val temperature =
+          Temperature(
+            region             = columns(0),
+            country            = columns(1),
+            state              = if (columns(2).nonEmpty) Some(columns(2)) else None,
+            city               = columns(3),
+            month              = columns(4).toInt,
+            day                = columns(5).toInt,
+            year               = columns(6).toInt,
+            averageTemperature = columns(7).toFloat
+          )
+        temperature.insert(tableName)(session)
+      }
     }
   }
 
