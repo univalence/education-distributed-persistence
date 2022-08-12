@@ -1,4 +1,6 @@
-ThisBuild / name         := "distributed-persistence"
+import sbtassembly.AssemblyPlugin.autoImport.assemblyPrependShellScript
+import sbtassembly.AssemblyPlugin.defaultUniversalScript
+
 ThisBuild / scalaVersion := "2.13.8"
 
 val libVersion =
@@ -21,6 +23,10 @@ val libVersion =
 
 lazy val root =
   (project in file("."))
+    .disablePlugins(sbtassembly.AssemblyPlugin)
+    .settings(
+      name := "education-distributed-persistence"
+    )
     .aggregate(
       benchmark,
       labs,
@@ -28,7 +34,8 @@ lazy val root =
       `microservice-common`,
       `microservice-ingest`,
       `microservice-process`,
-      `microservice-api`
+      `microservice-api`,
+      `microservice-demo`
     )
 
 lazy val `microservice-common` =
@@ -38,7 +45,8 @@ lazy val `microservice-common` =
       libraryDependencies ++= Seq(
         "com.google.code.gson" % "gson"             % libVersion.gson,
         "com.datastax.oss"     % "java-driver-core" % libVersion.cassandra
-      )
+      ),
+      assembly / assemblyJarName := s"${name.value}.jar"
     )
 
 lazy val `microservice-ingest` =
@@ -46,9 +54,14 @@ lazy val `microservice-ingest` =
     .settings(
       name := "microservice-ingest",
       libraryDependencies ++= Seq(
-        "com.sparkjava"    % "spark-core"    % libVersion.javaSpark,
-        "org.apache.kafka" % "kafka-clients" % libVersion.kafka
-      )
+        "com.sparkjava"    % "spark-core"      % libVersion.javaSpark,
+        "org.apache.kafka" % "kafka-clients"   % libVersion.kafka,
+        "org.slf4j"        % "slf4j-api"       % libVersion.slf4j,
+        "ch.qos.logback"   % "logback-classic" % libVersion.logback
+      ),
+      assembly / mainClass       := Some("io.univalence.microservice.ingest.MicroserviceIngestMain"),
+      assembly / assemblyJarName := s"${name.value}.jar",
+      assemblyPrependShellScript := Some(defaultUniversalScript(shebang = false)),
     )
     .dependsOn(`microservice-common`)
 
@@ -58,8 +71,12 @@ lazy val `microservice-process` =
       name := "microservice-process",
       libraryDependencies ++= Seq(
         "org.apache.kafka" % "kafka-clients"    % libVersion.kafka,
-        "com.datastax.oss" % "java-driver-core" % libVersion.cassandra
-      )
+        "com.datastax.oss" % "java-driver-core" % libVersion.cassandra,
+        "org.slf4j"        % "slf4j-api"        % libVersion.slf4j,
+        "ch.qos.logback"   % "logback-classic"  % libVersion.logback
+      ),
+      assembly / mainClass       := Some("io.univalence.microservice.process.MicroserviceProcessMain"),
+      assembly / assemblyJarName := s"${name.value}.jar"
     )
     .dependsOn(`microservice-common`)
 
@@ -69,13 +86,34 @@ lazy val `microservice-api` =
       name := "microservice-api",
       libraryDependencies ++= Seq(
         "com.sparkjava"    % "spark-core"       % libVersion.javaSpark,
-        "com.datastax.oss" % "java-driver-core" % libVersion.cassandra
+        "com.datastax.oss" % "java-driver-core" % libVersion.cassandra,
+        "org.slf4j"        % "slf4j-api"        % libVersion.slf4j,
+        "ch.qos.logback"   % "logback-classic"  % libVersion.logback
+      ),
+      assembly / mainClass       := Some("io.univalence.microservice.api.MicroserviceApiMain"),
+      assembly / assemblyJarName := s"${name.value}",
+      assemblyPrependShellScript := Some(defaultUniversalScript(shebang = false)),
+    )
+    .dependsOn(`microservice-common`)
+
+lazy val `microservice-demo` =
+  (project in file("microservice/demo"))
+    .disablePlugins(sbtassembly.AssemblyPlugin)
+    .settings(
+      name := "microservice-demo",
+      libraryDependencies ++= Seq(
+        "com.squareup.okhttp3" % "okhttp"           % libVersion.okhttp,
+        "org.apache.kafka"     % "kafka-clients"    % libVersion.kafka,
+        "com.datastax.oss"     % "java-driver-core" % libVersion.cassandra,
+        "org.slf4j"            % "slf4j-api"        % libVersion.slf4j,
+        "ch.qos.logback"       % "logback-classic"  % libVersion.logback
       )
     )
     .dependsOn(`microservice-common`)
 
 lazy val benchmark =
   (project in file("benchmark"))
+    .disablePlugins(sbtassembly.AssemblyPlugin)
     .enablePlugins(JmhPlugin)
     .settings(
       name := "benchmark"
@@ -84,6 +122,7 @@ lazy val benchmark =
 
 lazy val labs =
   (project in file("labs"))
+    .disablePlugins(sbtassembly.AssemblyPlugin)
     .settings(
       name := "labs",
       libraryDependencies ++= Seq(
@@ -93,11 +132,13 @@ lazy val labs =
         "org.slf4j"                     % "slf4j-api"                 % libVersion.slf4j,
         "ch.qos.logback"                % "logback-classic"           % libVersion.logback,
         "co.elastic.clients"            % "elasticsearch-java"        % libVersion.elasticsearch,
+        "org.apache.kafka"              % "kafka-clients"             % libVersion.kafka,
         "com.fasterxml.jackson.core"    % "jackson-databind"          % libVersion.jackson,
         "com.fasterxml.jackson.module" %% "jackson-module-scala"      % libVersion.jackson,
         "org.testcontainers"            % "testcontainers"            % libVersion.testcontainers,
         "org.testcontainers"            % "elasticsearch"             % libVersion.testcontainers,
         "org.testcontainers"            % "cassandra"                 % libVersion.testcontainers,
+        "org.testcontainers"            % "kafka"                     % libVersion.testcontainers,
         "org.rocksdb"                   % "rocksdbjni"                % libVersion.rocksdb,
         "org.mapdb"                     % "mapdb"                     % libVersion.mapdb,
         "com.datastax.oss"              % "java-driver-core"          % libVersion.cassandra,
@@ -110,9 +151,21 @@ lazy val labs =
 
 lazy val `labs-macro` =
   (project in file("labs-macro"))
+    .disablePlugins(sbtassembly.AssemblyPlugin)
     .settings(
       name := "labs-macro",
       libraryDependencies ++= Seq(
         "org.scala-lang" % "scala-reflect" % scalaVersion.value
       )
     )
+
+ThisBuild / assemblyMergeStrategy := {
+  case PathList("scala", _*) =>
+    MergeStrategy.first
+  case PathList(ps @ _*) if ps.last endsWith "module-info.class" =>
+    MergeStrategy.concat
+  case x =>
+    val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
+    oldStrategy(x)
+}
+Global / onChangedBuildSource := ReloadOnSourceChanges
