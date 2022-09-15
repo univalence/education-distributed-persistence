@@ -1,6 +1,3 @@
-import sbtassembly.AssemblyPlugin.autoImport.assemblyPrependShellScript
-import sbtassembly.AssemblyPlugin.defaultUniversalScript
-
 ThisBuild / scalaVersion := "2.13.8"
 
 val libVersion =
@@ -23,7 +20,6 @@ val libVersion =
 
 lazy val root =
   (project in file("."))
-    .disablePlugins(sbtassembly.AssemblyPlugin)
     .settings(
       name := "education-distributed-persistence"
     )
@@ -45,12 +41,12 @@ lazy val `microservice-common` =
       libraryDependencies ++= Seq(
         "com.google.code.gson" % "gson"             % libVersion.gson,
         "com.datastax.oss"     % "java-driver-core" % libVersion.cassandra
-      ),
-      assembly / assemblyJarName := s"${name.value}.jar"
+      )
     )
 
 lazy val `microservice-ingest` =
   (project in file("microservice/ingest"))
+    .enablePlugins(JavaAppPackaging)
     .settings(
       name := "microservice-ingest",
       libraryDependencies ++= Seq(
@@ -59,14 +55,15 @@ lazy val `microservice-ingest` =
         "org.slf4j"        % "slf4j-api"       % libVersion.slf4j,
         "ch.qos.logback"   % "logback-classic" % libVersion.logback
       ),
-      assembly / mainClass       := Some("io.univalence.microservice.ingest.MicroserviceIngestMain"),
-      assembly / assemblyJarName := s"${name.value}.jar",
-      assemblyPrependShellScript := Some(defaultUniversalScript(shebang = false)),
+      Compile / mainClass             := Some("io.univalence.microservice.ingest.MicroserviceIngestMain"),
+      Universal / packageName         := s"${name.value}",
+      Compile / discoveredMainClasses := Seq()
     )
     .dependsOn(`microservice-common`)
 
 lazy val `microservice-process` =
   (project in file("microservice/process"))
+    .enablePlugins(JavaAppPackaging)
     .settings(
       name := "microservice-process",
       libraryDependencies ++= Seq(
@@ -75,13 +72,15 @@ lazy val `microservice-process` =
         "org.slf4j"        % "slf4j-api"        % libVersion.slf4j,
         "ch.qos.logback"   % "logback-classic"  % libVersion.logback
       ),
-      assembly / mainClass       := Some("io.univalence.microservice.process.MicroserviceProcessMain"),
-      assembly / assemblyJarName := s"${name.value}.jar"
+      Compile / mainClass             := Some("io.univalence.microservice.api.MicroserviceProcessMain"),
+      Universal / packageName         := s"${name.value}",
+      Compile / discoveredMainClasses := Seq()
     )
     .dependsOn(`microservice-common`)
 
 lazy val `microservice-api` =
   (project in file("microservice/api"))
+    .enablePlugins(JavaAppPackaging)
     .settings(
       name := "microservice-api",
       libraryDependencies ++= Seq(
@@ -90,15 +89,14 @@ lazy val `microservice-api` =
         "org.slf4j"        % "slf4j-api"        % libVersion.slf4j,
         "ch.qos.logback"   % "logback-classic"  % libVersion.logback
       ),
-      assembly / mainClass       := Some("io.univalence.microservice.api.MicroserviceApiMain"),
-      assembly / assemblyJarName := s"${name.value}",
-      assemblyPrependShellScript := Some(defaultUniversalScript(shebang = false)),
+      Compile / mainClass             := Some("io.univalence.microservice.api.MicroserviceApiMain"),
+      Universal / packageName         := s"${name.value}",
+      Compile / discoveredMainClasses := Seq()
     )
     .dependsOn(`microservice-common`)
 
 lazy val `microservice-demo` =
   (project in file("microservice/demo"))
-    .disablePlugins(sbtassembly.AssemblyPlugin)
     .settings(
       name := "microservice-demo",
       libraryDependencies ++= Seq(
@@ -113,7 +111,6 @@ lazy val `microservice-demo` =
 
 lazy val benchmark =
   (project in file("benchmark"))
-    .disablePlugins(sbtassembly.AssemblyPlugin)
     .enablePlugins(JmhPlugin)
     .settings(
       name := "benchmark"
@@ -122,7 +119,6 @@ lazy val benchmark =
 
 lazy val labs =
   (project in file("labs"))
-    .disablePlugins(sbtassembly.AssemblyPlugin)
     .settings(
       name := "labs",
       libraryDependencies ++= Seq(
@@ -151,7 +147,6 @@ lazy val labs =
 
 lazy val `labs-macro` =
   (project in file("labs-macro"))
-    .disablePlugins(sbtassembly.AssemblyPlugin)
     .settings(
       name := "labs-macro",
       libraryDependencies ++= Seq(
@@ -159,13 +154,4 @@ lazy val `labs-macro` =
       )
     )
 
-ThisBuild / assemblyMergeStrategy := {
-  case PathList("scala", _*) =>
-    MergeStrategy.first
-  case PathList(ps @ _*) if ps.last endsWith "module-info.class" =>
-    MergeStrategy.concat
-  case x =>
-    val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
-    oldStrategy(x)
-}
 Global / onChangedBuildSource := ReloadOnSourceChanges
