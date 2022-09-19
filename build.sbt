@@ -97,6 +97,7 @@ lazy val `microservice-api` =
 
 lazy val `microservice-demo` =
   (project in file("microservice/demo"))
+    .enablePlugins(JavaAppPackaging)
     .settings(
       name := "microservice-demo",
       libraryDependencies ++= Seq(
@@ -105,7 +106,8 @@ lazy val `microservice-demo` =
         "com.datastax.oss"     % "java-driver-core" % libVersion.cassandra,
         "org.slf4j"            % "slf4j-api"        % libVersion.slf4j,
         "ch.qos.logback"       % "logback-classic"  % libVersion.logback
-      )
+      ),
+      Universal / packageName := s"${name.value}"
     )
     .dependsOn(`microservice-common`)
 
