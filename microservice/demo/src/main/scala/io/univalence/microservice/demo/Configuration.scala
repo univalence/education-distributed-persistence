@@ -8,7 +8,9 @@ object Configuration {
   val IngestHttpPort: Int = 10001
   val ApiHttpPort: Int    = 8080
 
+  val ServiceHost: String = "localhost"
+
   val StockInfoTopic: String = "stock-info"
-  val KafkaBootstrap: String = "locahost:9092"
+  val KafkaBootstrap: String = "localhost:9092"
 
 }

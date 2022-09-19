@@ -77,14 +77,14 @@ object InjectorMain {
   def sendDelta(id: String, doc: String, client: OkHttpClient): Unit =
     sendDoc(
       doc,
-      s"http://localhost:${Configuration.IngestHttpPort}/deltas/$id",
+      s"http://${Configuration.ServiceHost}:${Configuration.IngestHttpPort}/deltas/$id",
       client
     )
 
   def sendStock(id: String, doc: String, client: OkHttpClient): Unit =
     sendDoc(
       doc,
-      s"http://localhost:${Configuration.IngestHttpPort}/api/stocks/$id",
+      s"http://${Configuration.ServiceHost}:${Configuration.IngestHttpPort}/api/stocks/$id",
       client
     )
 
