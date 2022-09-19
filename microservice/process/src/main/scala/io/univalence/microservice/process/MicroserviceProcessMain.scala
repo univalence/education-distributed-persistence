@@ -25,7 +25,7 @@ object MicroserviceProcessMain {
       new KafkaConsumer[String, String](
         Map[String, AnyRef](
           ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG -> Configuration.KafkaBootstrap,
-          ConsumerConfig.GROUP_ID_CONFIG          -> "process-3",
+          ConsumerConfig.GROUP_ID_CONFIG          -> "process",
           ConsumerConfig.AUTO_OFFSET_RESET_CONFIG -> "earliest"
         ).asJava,
         new StringDeserializer,
