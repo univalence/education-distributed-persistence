@@ -210,3 +210,13 @@ On the client side:
 * OkHttp for Java
 * sttp, http4s for Scala
 * ...
+
+### How HTTP is used in our application?
+
+The store sends data to the ingest service by using the HTTP protocol.
+To do so, the store is seen as HTTP client. It connects to the ingest
+service, seen as an HTTP server. Then the store sends POST requests
+to the ingest service with data.
+
+The api service is also an HTTP server. It waits for client to send
+request on stored data about the available stocks.
