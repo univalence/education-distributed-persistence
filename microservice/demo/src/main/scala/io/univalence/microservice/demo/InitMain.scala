@@ -32,7 +32,7 @@ object InitMain {
             | }""".stripMargin)
 
       println(s"Create table store.stock...")
-      session.execute(s"""CREATE TABLE IF NOT EXISTS $table (
+      session.execute(s"""CREATE TABLE IF NOT EXISTS $keyspace.$table (
             |  id TEXT,
             |  ts BIGINT,
             |  qtt INT,
