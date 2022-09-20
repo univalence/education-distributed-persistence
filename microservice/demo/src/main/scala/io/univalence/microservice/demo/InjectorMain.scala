@@ -84,7 +84,7 @@ object InjectorMain {
   def sendStock(id: String, doc: String, client: OkHttpClient): Unit =
     sendDoc(
       doc,
-      s"http://${Configuration.ServiceHost}:${Configuration.IngestHttpPort}/api/stocks/$id",
+      s"http://${Configuration.ServiceHost}:${Configuration.IngestHttpPort}/stocks/$id",
       client
     )
 
