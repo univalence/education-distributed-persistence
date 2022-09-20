@@ -72,7 +72,7 @@ lazy val `microservice-process` =
         "org.slf4j"        % "slf4j-api"        % libVersion.slf4j,
         "ch.qos.logback"   % "logback-classic"  % libVersion.logback
       ),
-      Compile / mainClass             := Some("io.univalence.microservice.api.MicroserviceProcessMain"),
+      Compile / mainClass             := Some("io.univalence.microservice.process.MicroserviceProcessMain"),
       Universal / packageName         := s"${name.value}",
       Compile / discoveredMainClasses := Seq()
     )
