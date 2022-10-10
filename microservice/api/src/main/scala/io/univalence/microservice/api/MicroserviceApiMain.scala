@@ -1,25 +1,41 @@
 package io.univalence.microservice.api
 
 import com.datastax.oss.driver.api.core.CqlSession
-import io.univalence.microservice.common.entity.{ProjectedStock, ProjectedStockJson}
 import spark.{Request, Response}
 import spark.Spark._
+
+import io.univalence.microservice.common.args.readArgs
+import io.univalence.microservice.common.entity.{ProjectedStock, ProjectedStockJson}
 import io.univalence.microservice.common.repository.ProjectedStockRepository
 import io.univalence.microservice.common.repository.impl.CassandraProjectedStockRepository
+
+import java.net.InetSocketAddress
 
 object MicroserviceApiMain {
 
   import scala.jdk.CollectionConverters._
 
   def main(args: Array[String]): Unit = {
-    port(Configuration.ApiHttpPort)
-    println(s"Ready on http://localhost:${Configuration.ApiHttpPort}/")
+    val parameters: Map[String, Option[String]] = readArgs(args.toList).toMap
+    val servicePort   = parameters.get("port").flatMap(_.map(_.toInt)).getOrElse(Configuration.ApiHttpPort)
+    val cassandraPort = parameters.get("cassandra.port").flatMap(_.map(_.toInt)).getOrElse(Configuration.CassandraPort)
 
-    // TODO instantiate a stock repository from a Cassandra session
+    port(servicePort)
+    println(s"Ready on http://localhost:$servicePort/")
 
-    val session = CqlSession.builder().build()
+    val session =
+      CqlSession
+        .builder()
+        .addContactPoint(new InetSocketAddress(cassandraPort))
+        .withLocalDatacenter("datacenter1")
+        .build()
 
-    val repository: ProjectedStockRepository = new CassandraProjectedStockRepository(session)
+    val repository: ProjectedStockRepository =
+      new CassandraProjectedStockRepository(
+        session,
+        Configuration.CassandraKeyspace,
+        Configuration.CassandraTable
+      )
 
     get(
       "/api/stocks",

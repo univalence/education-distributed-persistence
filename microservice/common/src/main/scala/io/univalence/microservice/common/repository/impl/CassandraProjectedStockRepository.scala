@@ -5,14 +5,14 @@ import com.datastax.oss.driver.api.core.cql.{BatchStatement, BatchType, Row}
 import io.univalence.microservice.common.entity.ProjectedStock
 import io.univalence.microservice.common.repository.ProjectedStockRepository
 
-class CassandraProjectedStockRepository(session: CqlSession)
+class CassandraProjectedStockRepository(session: CqlSession, keyspace: String, table: String)
     extends ProjectedStockRepository {
 
   import scala.jdk.CollectionConverters._
 
   override def findById(id: String): Option[ProjectedStock] = {
     val statement =
-      session.prepare("SELECT id, ts, qtt FROM store.stock WHERE id = ?")
+      session.prepare(s"SELECT id, ts, qtt FROM $keyspace.$table WHERE id = ?")
     val result: Option[Row] = Option(session.execute(statement.bind(id)).one())
 
     result.map(result =>
@@ -26,7 +26,7 @@ class CassandraProjectedStockRepository(session: CqlSession)
 
   override def findAll(): Iterator[ProjectedStock] = {
     val statement =
-      session.prepare("SELECT id, ts, qtt FROM store.stock")
+      session.prepare(s"SELECT id, ts, qtt FROM $keyspace.$table")
     val result: List[Row] =
       session.execute(statement.bind()).all().asScala.toList
 
@@ -43,7 +43,7 @@ class CassandraProjectedStockRepository(session: CqlSession)
 
   override def save(projectedStock: ProjectedStock): Unit = {
     val statement =
-      session.prepare("INSERT INTO store.stock (id, ts, qtt) VALUES (?, ?, ?)")
+      session.prepare(s"INSERT INTO $keyspace.$table (id, ts, qtt) VALUES (?, ?, ?)")
     session.execute(
       statement.bind(
         projectedStock.id,
@@ -55,7 +55,7 @@ class CassandraProjectedStockRepository(session: CqlSession)
 
   override def saveAll(stocks: List[ProjectedStock]): Unit = {
     val statement =
-      session.prepare("INSERT INTO store.stock (id, ts, qtt) VALUES (?, ?, ?)")
+      session.prepare(s"INSERT INTO $keyspace.$table (id, ts, qtt) VALUES (?, ?, ?)")
 
     val batch =
       BatchStatement

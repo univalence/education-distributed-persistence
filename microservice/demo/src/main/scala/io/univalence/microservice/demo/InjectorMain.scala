@@ -1,5 +1,6 @@
 package io.univalence.microservice.demo
 
+import io.univalence.microservice.common.args.readArgs
 import io.univalence.microservice.common.entity.{DeltaStock, DeltaStockJson, Stock, StockJson}
 import okhttp3._
 
@@ -15,11 +16,15 @@ object InjectorMain {
     scala.collection.mutable.Map.empty
 
   def main(args: Array[String]): Unit = {
+    val parameters = readArgs(args.toList).toMap
+
+    val ingestPort = parameters.get("ingest.port").flatMap(_.map(_.toInt)).getOrElse(Configuration.IngestHttpPort)
+
     val httpClient = new OkHttpClient.Builder().build()
 
     println("--> Initialize stocks")
 
-    initStocks(httpClient)
+    initStocks(httpClient, ingestPort)
 
     println("--> Send stocks and deltas")
 
@@ -33,14 +38,14 @@ object InjectorMain {
         val stock = nextStock
 
         println(s"Serializing: $stock")
-        sendStock(stock.id, StockJson.serialize(stock), httpClient)
+        sendStock(stock.id, StockJson.serialize(stock), httpClient, ingestPort)
       } else {
         val delta = nextDeltaStock
 
         // ensure that stock for each prduct is positive
         if (stockDb(delta.id) + delta.delta >= 0) {
           println(s"Serializing: $delta")
-          sendDelta(delta.id, DeltaStockJson.serialize(delta), httpClient)
+          sendDelta(delta.id, DeltaStockJson.serialize(delta), httpClient, ingestPort)
           // update stock value
           stockDb(delta.id) = stockDb(delta.id) + delta.delta
         } else {
@@ -54,14 +59,14 @@ object InjectorMain {
 
   /** Initialize the whole application with a basis stock value.
     */
-  def initStocks(httpClient: OkHttpClient): Unit = {
+  def initStocks(httpClient: OkHttpClient, ingestPort: Int): Unit = {
     for (id <- Stock.transco.keys) {
       val stock = createStock(id)
       stockDb(id) = stock.quantity
 
       println(s"Observed stock for product#$id: ${stock.quantity}")
 
-      sendStock(id, StockJson.serialize(stock), httpClient)
+      sendStock(id, StockJson.serialize(stock), httpClient, ingestPort)
 
       pause()
     }
@@ -74,17 +79,17 @@ object InjectorMain {
     Thread.sleep(waitTime)
   }
 
-  def sendDelta(id: String, doc: String, client: OkHttpClient): Unit =
+  def sendDelta(id: String, doc: String, client: OkHttpClient, ingestPort: Int): Unit =
     sendDoc(
       doc,
-      s"http://${Configuration.ServiceHost}:${Configuration.IngestHttpPort}/deltas/$id",
+      s"http://${Configuration.ServiceHost}:$ingestPort/deltas/$id",
       client
     )
 
-  def sendStock(id: String, doc: String, client: OkHttpClient): Unit =
+  def sendStock(id: String, doc: String, client: OkHttpClient, ingestPort: Int): Unit =
     sendDoc(
       doc,
-      s"http://${Configuration.ServiceHost}:${Configuration.IngestHttpPort}/stocks/$id",
+      s"http://${Configuration.ServiceHost}:$ingestPort/stocks/$id",
       client
     )
 
