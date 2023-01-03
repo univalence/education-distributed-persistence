@@ -12,11 +12,11 @@ object exercise_macros {
 
   def partIndent: String = "\t" * activatedContexts.size
 
-  case class Section(filename: String, line: Int, label: String) {
+  case class Section(path: String, line: Int, label: String) {
     def reportOnly(f: => Unit): Unit = {
       activatedContexts = activatedContexts :+ ExerciseContext(label)
       val content = activatedContexts.map(_.label).mkString(" > ")
-      println(s"${Console.YELLOW}+++ $content ($filename:$line) ${Console.RED}(TO ACTIVATE)${Console.RESET}")
+      println(s"${Console.YELLOW}+++ $content ($path:$line) ${Console.RED}(TO ACTIVATE)${Console.RESET}")
       activatedContexts = activatedContexts.init
     }
 
@@ -25,7 +25,7 @@ object exercise_macros {
       val content = activatedContexts.map(_.label).mkString(" > ")
 
       try {
-        println(s"${Console.YELLOW}+++ $content ($filename:$line)${Console.RESET}")
+        println(s"${Console.YELLOW}+++ $content ($path:$line)${Console.RESET}")
 
         f
       } catch {
@@ -43,13 +43,13 @@ object exercise_macros {
 
     val position: c.universe.Position = label.tree.pos
     val line: Int                     = position.line
-    val fileName: String              = position.source.file.name
+    val path: String                  = position.source.path
 
     c.Expr[Unit](q"""
 io.univalence.dataeng.internal.exercise_macros.Section(
-  filename = $fileName,
-  line     = $line,
-  label    = $label
+  path  = $path,
+  line  = $line,
+  label = $label
 ).reportOnly($f)
 """)
   }
@@ -60,13 +60,13 @@ io.univalence.dataeng.internal.exercise_macros.Section(
 
     val position: c.universe.Position = label.tree.pos
     val line: Int                     = position.line
-    val fileName: String              = position.source.file.name
+    val path: String                  = position.source.path
 
     c.Expr[Unit](q"""
 io.univalence.dataeng.internal.exercise_macros.Section(
-  filename = $fileName,
-  line     = $line,
-  label    = $label
+  path  = $path,
+  line  = $line,
+  label = $label
 ).run($f)
 """)
   }
@@ -77,15 +77,15 @@ io.univalence.dataeng.internal.exercise_macros.Section(
 
     val position: c.universe.Position = label.tree.pos
     val line: Int                     = position.line
-    val fileName: String              = position.source.file.name
+    val path: String                  = position.source.path
 
     val inF = c.Expr[Unit](f)
 
     c.Expr[Unit](q"""
 io.univalence.dataeng.internal.exercise_macros.Section(
-  filename = $fileName,
-  line     = $line,
-  label    = $label
+  path  = $path,
+  line  = $line,
+  label = $label
 ).run($inF)
 """)
   }
@@ -99,11 +99,11 @@ io.univalence.dataeng.internal.exercise_macros.Section(
 
     val position: c.universe.Position = label.tree.pos
     val line: Int                     = position.line
-    val fileName: String              = position.source.file.name
+    val path: String                  = position.source.file.path
 
     c.Expr[Unit](
       q"""{
-  println(s"$${Console.YELLOW}+++ PART $${$label} ($${$fileName}:$${$line})$${Console.RESET}")
+  println(s"$${Console.YELLOW}+++ PART $${$label} ($${$path}:$${$line})$${Console.RESET}")
 }"""
     )
   }
