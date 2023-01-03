@@ -1,4 +1,4 @@
-ThisBuild / scalaVersion := "2.13.8"
+ThisBuild / scalaVersion := "2.13.10"
 
 val libVersion =
   new {
@@ -14,7 +14,7 @@ val libVersion =
     val rocksdb        = "7.4.4"
     val scalatest      = "3.2.13"
     val slf4j          = "1.7.36"
-    val testcontainers = "1.17.3"
+    val testcontainers = "1.17.6"
     val typsafeConfig  = "1.4.2"
   }
 
