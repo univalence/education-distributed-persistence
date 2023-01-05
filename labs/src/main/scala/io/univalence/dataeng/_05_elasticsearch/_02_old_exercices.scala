@@ -23,7 +23,7 @@ import scala.jdk.CollectionConverters._
  * and you want to implement a SearchBox using ElasticSearch to list
  * yours products.
  */
-object _02_exercices {
+object _02_old_exercices {
   case class Product @JsonCreator() (id: Int, name: String, brand: String, kind: String, price: Int)
 
   val products =

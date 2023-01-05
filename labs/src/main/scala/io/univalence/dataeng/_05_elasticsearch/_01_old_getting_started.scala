@@ -42,7 +42,7 @@ import java.util.zip.GZIPInputStream
  * ==Useful link==
  *   - https://www.elastic.co/guide/en/elasticsearch/reference/current/rest-apis.html
  */
-object _01_getting_started {
+object _01_old_getting_started {
   case class Tweet @JsonCreator() (id: String, source: String, text: String) {
     override def toString: String =
       s"""

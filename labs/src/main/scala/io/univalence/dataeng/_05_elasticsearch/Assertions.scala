@@ -3,7 +3,7 @@ package io.univalence.dataeng._05_elasticsearch
 import co.elastic.clients.elasticsearch.ElasticsearchClient
 import co.elastic.clients.elasticsearch.indices.ExistsRequest
 
-import io.univalence.dataeng._05_elasticsearch._02_exercices.Product
+import io.univalence.dataeng._05_elasticsearch._02_old_exercices.Product
 import io.univalence.dataeng._05_elasticsearch.ElasticSearch.countIndex
 import io.univalence.dataeng.internal.exercise_tools.check
 import io.univalence.dataeng.internal.utils.retry
