@@ -3,7 +3,7 @@ ThisBuild / scalaVersion := "2.13.10"
 val libVersion =
   new {
     val cassandra      = "4.14.1"
-    val elasticsearch  = "8.3.3"
+    val elasticsearch  = "8.5.3"
     val gson           = "2.9.1"
     val jackson        = "2.13.3"
     val javaSpark      = "2.9.4"
