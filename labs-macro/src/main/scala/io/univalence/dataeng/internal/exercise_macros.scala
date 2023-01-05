@@ -16,7 +16,7 @@ object exercise_macros {
     def reportOnly(f: => Unit): Unit = {
       activatedContexts = activatedContexts :+ ExerciseContext(label)
       val content = activatedContexts.map(_.label).mkString(" > ")
-      println(s"${Console.YELLOW}+++ $content ($path:$line) ${Console.RED}(TO ACTIVATE)${Console.RESET}")
+      println(s"${Console.YELLOW}+++ $content ${Console.RED}(TO ACTIVATE)${Console.RESET} ($path:$line)")
       activatedContexts = activatedContexts.init
     }
 
