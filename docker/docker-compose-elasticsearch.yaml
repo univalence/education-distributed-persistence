@@ -1,0 +1,79 @@
+services:
+  elasticsearch-1:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3
+    container_name: elasticsearch-1
+    environment:
+      - ELASTICSEARCH_CLUSTER_NAME=es-cluster
+      - ELASTICSEARCH_NODE_NAME=elasticsearch-1
+      - ELASTICSEARCH_CLUSTER_HOSTS=elasticsearch-1,elasticsearch-2,elasticsearch-3
+      - node.name=elasticsearch-1
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=elasticsearch-2,elasticsearch-3
+      - cluster.initial_master_nodes=elasticsearch-1,elasticsearch-2,elasticsearch-3
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - elastic
+
+  elasticsearch-2:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3
+    container_name: elasticsearch-2
+    environment:
+      - ELASTICSEARCH_CLUSTER_NAME=es-cluster
+      - ELASTICSEARCH_NODE_NAME=elasticsearch-2
+      - ELASTICSEARCH_CLUSTER_HOSTS=elasticsearch-1,elasticsearch-2,elasticsearch-3
+      - node.name=elasticsearch-2
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=elasticsearch-1,elasticsearch-3
+      - cluster.initial_master_nodes=elasticsearch-1,elasticsearch-2,elasticsearch-3
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9201:9200
+      - 9301:9300
+    networks:
+      - elastic
+
+  elasticsearch-3:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3
+    container_name: elasticsearch-3
+    environment:
+      - ELASTICSEARCH_CLUSTER_NAME=es-cluster
+      - ELASTICSEARCH_NODE_NAME=elasticsearch-3
+      - ELASTICSEARCH_CLUSTER_HOSTS=elasticsearch-1,elasticsearch-2,elasticsearch-3
+      - node.name=elasticsearch-3
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=elasticsearch-1,elasticsearch-2
+      - cluster.initial_master_nodes=elasticsearch-1,elasticsearch-2,elasticsearch-3
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 9202:9200
+      - 9302:9300
+    networks:
+      - elastic
+
+networks:
+  elastic:
+    driver: bridge
