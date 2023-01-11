@@ -10,6 +10,8 @@ object exercise_macros {
 
   var activatedContexts: Seq[ExerciseContext] = Seq.empty
 
+  val COLOR_GREY = "\u001b[38;5;8m"
+
   def partIndent: String = "\t" * activatedContexts.size
 
   case class Section(path: String, line: Int, label: String) {
@@ -142,6 +144,7 @@ io.univalence.dataeng.internal.exercise_macros.Section(
   val displayExpression =
     $expressionString.trim
       .replace("\n", "\n" + io.univalence.dataeng.internal.exercise_macros.partIndent)
+      .replaceFirst("(//[^\n]+)\n", $COLOR_GREY + "$$1" + Console.RESET + "\n")
 
   val content = s">>> $$displayExpression => $$result"
 
