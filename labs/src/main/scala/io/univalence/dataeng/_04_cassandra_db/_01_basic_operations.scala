@@ -68,22 +68,53 @@ object _01_basic_operations {
   /**
    * To make this program work, you have first to use Docker.
    *
-   *   - If it is not done yet, download
-   *     [[https://www.docker.com/products/docker-desktop/ Docker Desktop]]
-   *     and follow instruction.
-   *   - Run the following command in a terminal to start Cassandra
-   *     {{{
+   * ==Install and running Docker==
+   * If it is not done yet, download
+   * [[https://www.docker.com/products/docker-desktop/ Docker Desktop]]
+   * and follow instruction. Ensure then that the docker service/daemon
+   * is running by launching Docker Desktop or by running this command:
+   *
+   * {{{
+   *   docker info
+   * }}}
+   *
+   * It should display information about the Docker client and the
+   * Docker server.
+   *
+   * ==Running Cassandra==
+   * There are 2 ways to run a Cassandra: standalone mode (1 node only)
+   * or cluster mode (3 nodes). You have to choose between those 2
+   * modes. Prefer to use the cluster mode. But, if you have not enough
+   * resources on your computer (eg. not enough CPU cores, or memory),
+   * you will have to fallback to the standalone mode.
+   *
+   * ===Cluster mode===
+   * A docker compose file is available in the directory `docker/` in
+   * this project. It spawns 3 nodes
+   * {{{
+   *   docker-compose -f docker/docker-compose-cassandra.yaml up -d
+   * }}}
+   *
+   * To stop the cluster, simply us this command:
+   * {{{
+   *   docker-compose -f docker/docker-compose-cassandra.yaml down
+   * }}}
+   *
+   * ===Standalone mode===
+   * Run the following command in a terminal to start Cassandra
+   * {{{
    *     docker run --name cassandra -p 9042:9042 -d cassandra:latest
-   *     }}}
-   *   - (Optionally) You run the Cassandra shell, to check the setup
-   *     works well
-   *     {{{
+   * }}}
+   *
+   * (Optionally) You run the Cassandra shell, to check the setup works
+   * well
+   * {{{
    *     docker exec -it cassandra cqlsh
-   *     }}}
+   * }}}
    *
    * Note: to stop Cassandra, you have to run this command
    * {{{
-   *   docker stop cassandra
+   *     docker stop cassandra
    * }}}
    */
   def main(args: Array[String]): Unit =
@@ -95,6 +126,32 @@ object _01_basic_operations {
         .withLocalDatacenter("datacenter1")
         .build()
     ) { session =>
+      exercise("Check the cluster") {
+
+        /**
+         * First, get information about the local Cassandra node (the
+         * one we are connected on). Those information are available in
+         * the table `system.local`.
+         */
+        val localResult = session.execute("""SELECT * FROM system.local""")
+        val localRows   = localResult.all().asScala.toList
+        displayRows(localRows)
+
+        if (localRows.size == 1 && localRows.head.getString("bootstrapped") == "COMPLETED")
+          comment("Cassandra is ready")
+        else
+          comment("Cassandra is not ready")
+
+        check(localRows.size == 1)
+        check(localRows.head.getString("bootstrapped") == "COMPLETED")
+
+        val peersResult = session.execute("""SELECT * FROM system.peers""")
+        val peersRows   = peersResult.all().asScala.toList
+        displayRows(peersRows)
+
+        comment(s"Cassandra cluster has ${peersRows.size + 1} node(s)")
+      }
+
       exercise_ignore("Create a keyspace") {
 
         /**
@@ -259,7 +316,7 @@ object _01_basic_operations {
         check(user == User("123", "jon", 32))
       }
 
-      exercise("Find many users") {
+      exercise_ignore("Find many users") {
 
         def findUsersByIds(ids: List[String]): List[User] = {
 
