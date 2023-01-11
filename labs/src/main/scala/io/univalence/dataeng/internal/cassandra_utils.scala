@@ -10,6 +10,7 @@ object cassandra_utils {
   def display(result: ResultSet): Unit = displayRows(result.all().asScala.toList)
 
   def displayRows(rows: List[Row]): Unit = {
+    val nullValue: String                                = "<null>"
     def leftPad(s: String, length: Int, c: Char): String = (c.toString * (length - Math.min(s.length, length))) + s
 
     val columns = rows.headOption.map(_.getColumnDefinitions.asScala)
@@ -18,7 +19,7 @@ object cassandra_utils {
         rows.foldLeft(cols.map(_.getName.toString.length)) { case (lengths, row) =>
           cols
             .map(_.getName)
-            .map(name => row.getObject(name).toString.length)
+            .map(name => Option(row.getObject(name)).map(_.toString.length).getOrElse(nullValue.length))
             .zip(lengths)
             .map { case (valueSize, size) => Math.max(valueSize, size) }
         }
@@ -42,7 +43,10 @@ object cassandra_utils {
               cols
                 .zip(sizes)
                 .map { case (col, size) =>
-                  val value = row.getObject(col.getName).toString
+                  val value =
+                    Option(row.getObject(col.getName))
+                      .map(_.toString)
+                      .getOrElse(s"\u001b[1m$nullValue${Console.RESET}")
                   col.getType.getProtocolCode match {
                     case DataType.INT | DataType.FLOAT | DataType.DOUBLE | DataType.DECIMAL =>
                       leftPad(value, size, ' ')
@@ -57,7 +61,7 @@ object cassandra_utils {
     }
       .getOrElse("Nothing")
 
-    println(printable)
+    print(printable)
   }
 
 }
