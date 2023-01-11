@@ -110,6 +110,27 @@ io.univalence.dataeng.internal.exercise_macros.Section(
     )
   }
 
+  def commentMacro(c: blackbox.Context)(content: c.Expr[String]): c.Expr[Unit] = {
+    import c._
+    import universe._
+
+    val position: c.universe.Position = content.tree.pos
+    val line: Int                     = position.source.offsetToLine(position.start)
+
+    c.Expr[Unit](
+      q"""{
+  println(
+    io.univalence.dataeng.internal.exercise_macros.partIndent
+    + io.univalence.dataeng.internal.exercise_macros.COLOR_GREY
+    + "# "
+    + $content
+    + s" $${Console.YELLOW}(line:$${$line})"
+    + Console.RESET
+  )
+}"""
+    )
+  }
+
   def checkMacro(c: blackbox.Context)(expression: c.Expr[Boolean]): c.Expr[Unit] = {
     import c._
     import universe._

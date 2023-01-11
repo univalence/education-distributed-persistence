@@ -13,6 +13,8 @@ object exercise_tools {
 
   def check(expression: Boolean): Unit = macro checkMacro
 
+  def comment(content: String): Unit = macro commentMacro
+
   def part(label: String): Unit = macro partMacro
 
   def exercise(label: String)(f: => Unit): Unit = macro exerciseMacro
