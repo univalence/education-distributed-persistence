@@ -27,24 +27,55 @@ import io.univalence.dataeng.internal.exercise_tools._
  * To run Elasticsearch and to do the exercises below, you will need tu
  * use Docker.
  *
- *   - If it is not done yet, download
- *     [[https://www.docker.com/products/docker-desktop/ Docker Desktop]]
- *     and follow instructions.
- *   - Run the following command in a terminal to start Elasticsearch
- *     {{{
+ * ===Install and running Docker===
+ * If it is not done yet, download
+ * [[https://www.docker.com/products/docker-desktop/ Docker Desktop]]
+ * and follow instruction. Ensure then that the docker service/daemon is
+ * running by launching Docker Desktop or by running this command:
+ *
+ * {{{
+ *   docker info
+ * }}}
+ *
+ * It should display information about the Docker client and the Docker
+ * server.
+ *
+ * ==Running Elasticsearch==
+ * There are 2 ways to run a Elasticsearch: standalone mode (1 node
+ * only) or cluster mode (3 nodes). You have to choose between those 2
+ * modes. Prefer to use the cluster mode. But, if you have not enough
+ * resources on your computer (eg. not enough CPU cores, or memory), you
+ * will have to fallback to the standalone mode.
+ *
+ * ===Cluster mode===
+ * A docker compose file is available in the directory `docker/` in this
+ * project. It spawns 3 nodes
+ * {{{
+ *   docker-compose -f docker/docker-compose-elasticsearch.yaml up -d
+ * }}}
+ *
+ * To stop the cluster, simply us this command:
+ * {{{
+ *   docker-compose -f docker/docker-compose-elasticsearch.yaml down
+ * }}}
+ *
+ * ===Standalone mode===
+ * Run the following command in a terminal to start Elasticsearch
+ * {{{
  *   docker run -p 9200:9200 -p 9300:9300 \
  *     --name elasticsearch \
  *     -e "discovery.type=single-node" \
  *     -e "xpack.security.enabled=false" \
  *     -e "xpack.security.enrollment.enabled=false" \
  *     docker.elastic.co/elasticsearch/elasticsearch:8.5.3
- *     }}}
+ * }}}
  *
  * ==Exercices in this file==
- * All the exercises are ignored in this file are ignored. Convert each
+ * All the exercises in this file are ignored. Convert each
  * `exercise_ignored` to `exercise` (ie. activate each exercise) one by
  * one, run the file, see what has to be solved or simply observe the
- * output. Once an exercise is done, toggle it into `exercise_ignored`.
+ * output. Once an exercise is done, toggle it back into
+ * `exercise_ignored`.
  */
 object _01_introduction {
 
@@ -78,8 +109,8 @@ object _01_introduction {
          *   1. The client sends a request to the server.
          *   1. The server processes the request.
          *   1. The server sends a response to the client.
-         *   1. Once client received the response, it disconnects from
-         *      the server.
+         *   1. Once the client received the response, it disconnects
+         *      from the server.
          *
          * In our case, the client application is represented by this
          * code and the server application is Elasticsearch.
@@ -102,7 +133,7 @@ object _01_introduction {
          *
          * where scheme used to be `http` or `https`, query is a set of
          * key-value pair separated by `&` character
-         * (`q=mar*&fuzziness=true`).
+         * (`q=fr&fuzziness=true`).
          *
          * Each method in the request has a meaning:
          *   - GET: get a resource (eg. a document) from the server
@@ -196,12 +227,13 @@ object _01_introduction {
         if (response.code == 201) {
 
           /**
-           * To explore JSON document, we have added some operations:
+           * Note: to explore JSON document, we have added some
+           * operations:
            *   - `json / "field"` extracts a field inside a JSON object
            *   - `json(n)` extracts a cell inside a JSON array
            *   - `json.getAs<type>` forces the conversion to Java type
            *
-           * Suppose that you have this document in the varaible
+           * Suppose that you have this document in the variable
            * `jsonDoc`:
            * {{{
            *     {
@@ -274,7 +306,7 @@ object _01_introduction {
 
       exercise_ignore("Get a user by its ID") {
 
-        /** Now, we will retrieve a user according to */
+        /** Now, we will retrieve a user according to its ID. */
 
         val response = http_GET(s"$baseUrl/user/_doc/123")
         display(response)
