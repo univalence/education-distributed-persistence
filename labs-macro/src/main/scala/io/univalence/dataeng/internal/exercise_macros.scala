@@ -33,6 +33,10 @@ object exercise_macros {
       } catch {
         case PartException(l, c) =>
           throw PartException(s"$label > $l", c)
+        case e: NotImplementedError =>
+          println(
+            partIndent + s">>> ${Console.CYAN}TODO an implementation is missing.${Console.RESET} ($path:$line)"
+          )
         case e: Exception =>
           throw PartException(label, e)
       } finally activatedContexts = activatedContexts.init
@@ -124,7 +128,7 @@ io.univalence.dataeng.internal.exercise_macros.Section(
     + io.univalence.dataeng.internal.exercise_macros.COLOR_GREY
     + "# "
     + $content
-    + s" $${Console.YELLOW}(line:$${$line})"
+    + s" $${Console.WHITE}(line:$${$line})"
     + Console.RESET
   )
 }"""
@@ -158,6 +162,8 @@ io.univalence.dataeng.internal.exercise_macros.Section(
         s"$${Console.GREEN}OK (line:$${$line})$${Console.RESET}"
       case scala.util.Success(false) =>
         s"$${Console.YELLOW}FAILED ($${$path}:$${$line})$${Console.RESET}"
+      case scala.util.Failure(e: scala.NotImplementedError) =>
+        s"$${Console.YELLOW}Implementation missing ($${$path}:$${$line}$${Console.RESET}"
       case scala.util.Failure(e) =>
         s"$${Console.RED}ERROR ($${$path}:$${$line}: $${e.getClass.getCanonicalName}: $${e.getMessage})$${Console.RESET}"
     }
