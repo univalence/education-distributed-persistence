@@ -5,7 +5,12 @@
         </encoder>
     </appender>
 
+    <logger name="org.apache.kafka">
+        <level value="WARN" />
+    </logger>
+
     <root level="info">
         <appender-ref ref="STDOUT"/>
     </root>
+
 </configuration>
