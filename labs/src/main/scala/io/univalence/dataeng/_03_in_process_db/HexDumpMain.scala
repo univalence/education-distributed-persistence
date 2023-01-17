@@ -1,6 +1,6 @@
 package io.univalence.dataeng._03_in_process_db
 
-import io.univalence.dataeng.internal.exercise_tools
+import io.univalence.dataeng.internal.utils.hexdump
 
 import scala.util.Using
 
@@ -24,7 +24,7 @@ object HexDumpMain {
         buffer.rewind()
 
         val data = buffer.array()
-        exercise_tools.hexdump(data, offset)
+        hexdump(data, offset)
 
         offset += byteRead
         byteRead = channel.read(buffer)

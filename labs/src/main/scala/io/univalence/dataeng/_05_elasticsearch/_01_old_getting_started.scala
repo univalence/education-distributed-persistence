@@ -121,7 +121,7 @@ object _01_old_getting_started {
        * We need to wait for BulkOperation to be processed by
        * ElasticSearch.
        */
-      val tweetsAdded = retry(countIndex(index)(client))(_ > 0L)(5)
+      val tweetsAdded = retry(5, 200)(countIndex(index)(client))(_ > 0L)
 
       tweetsAdded match {
         case Some(v) => println(s"$v tweets added to elasticsearch\n")

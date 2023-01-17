@@ -17,7 +17,7 @@ object Assertions {
   }
 
   def checkProductsAreInserted(index: String, products: List[Product])(implicit client: ElasticsearchClient): Unit = {
-    val productsInserted: Long = retry(countIndex(index))(_ > 0)(5).getOrElse(0)
+    val productsInserted: Long = retry(5, 200)(countIndex(index))(_ > 0).getOrElse(0)
     check(productsInserted == products.length)
   }
 }
