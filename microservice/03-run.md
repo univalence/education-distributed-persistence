@@ -1,128 +1,64 @@
 # Deploy and run
 
-## Target environment
+## Docker
 
-To deploy and run the application, you will use a provided virtual
-machine (VM). The name of the VM matches `s<id>.edu.univalence.io`.
+To run this application application, you will need to use Docker.
 
-To connect to those VMs, you will need a ssh connection (you must have
-OpenSSH installed). To ensure that SSH is installed. This command
-should show the SSH version: `ssh -V`.
+## Install Docker
+
+If it is not done yet, download
+[Docker Desktop](https://www.docker.com/products/docker-desktop/)
+and follow instruction. Ensure then that the docker service/daemon
+is running by launching Docker Desktop or by running this command:
+
+```shell
+$ docker info
+```
+
+It should display information about the Docker client and the
+Docker server.
 
 ## Install Kafka & Cassandra
 
-### Install Apache Kafka
-
-**Note**: Apache Kafka is already install on your VM. You can directly
-to the next section.
-
-* Install Kafka (download the TGZ file and uncompress it — for windows,
-  ensure that the Kafka directory is closed to the disk root and that
-  there is no space and no character with accent)
+Both Apache Kafka and Apache Cassandra services come with predefined
+Docker Compose files in this project, in the directory `docker/`.
 
 ### Run Apache Kafka
 
-Open a shell on the VM
+The Docker Compose file for Kafka spawns a cluster made of a Zookeeper
+service (used by Kafka to managed its shared configuration and the
+consensus) and 2 Kafka brokers.
+
+Open a terminal and run
 
 ```shell
-$ ssh -P 2222 root@<host>
+$ docker compose -f docker/docker-compose-kafka.yaml -p kafka up
 ```
 
-If asked to continue connecting, type `yes`.
+There is mapping for Kafka for TCP port 9092 and 9093. 
 
-Enter the password. Then, got to Kafka directory.
+### Run Cassandra
+
+For Cassandra, you can or run a single node or 3 nodes, depending on
+the performances of your computer.
+
+It takes some times to launch Cassandra. Once ready, Cassandra is
+available on port 9042.
+
+#### Single Cassandra node
+
+Open a new terminal and run
 
 ```shell
-$ cd /opt/kafka
+$ docker run -p 9042:9042 --name cassandra-db --rm cassandra:4
 ```
 
-Launch Zookeeper:
+#### Multi Cassandra nodes
+
+Open a new terminal and run
 
 ```shell
-$ ./bin/zookeeper-server-start.sh config/zookeeper.properties
-```
-
-Open a new terminal. Connect to your VM again with ssh and launch
-Kafka:
-
-```shell
-$ ./bin/kafka-server-start.sh config/server.properties
-```
-
-In another terminal, you can add a second instance of Kafka:
-
-```shell
-$ ./bin/kafka-server-start.sh config/server.properties \
-  --override broker.id=1 \
-  --override log.dirs=/tmp/kafka-logs.1 \
-  --override listeners=PLAINTEXT://:9093
-```
-
-Note for Windows: every scripts are under `bin\windows`. For example:
-
-```shell
-> bin\windows\zookeeper-server-start.bat config\zookeeper.properties
-```
-
-### Run Cassandra (with Docker)
-
-**Note**: for Cassandra, you will not have to install anything. You
-will only need docker, knowing that this tool is already available on
-your VM.
-
-Open a new terminal. Connect to your VM again with ssh and launch
-Cassandra by using Docker:
-
-```shell
-$ docker run -p 9042:9042 --name cassandra-db --rm cassandra:4.0.3
-```
-
-### Test your environment
-
-In the directory `/opt/test_vm_dp`, you have a tool to test your setup.
-In this directory, you can simply run the following command
-
-```shell
-$ ./bin/test_vm_dp
-```
-
-It tests your Cassandra setup, then the Kafka setup, and at the end, it
-launches a simple Web service.
-
-Once the test tools is launched, you can query this URL by using your
-Web browser.
-
-* `http://<host>:8080/api`
-
-It must send you back a JSON message.
-
-To stop the test Web service, open this URL below.
-
-* `http://<host>:8080/stop`
-
-## Deploy your application
-
-* Open `sbt shell` at the bottom of IntelliJ IDEA.
-* Run `Universal/packageBin`
-
-This has compiled code and generated Zip files of the different
-projects in the directory `microservice`.
-
-Repeat the process below for each of the following sub-projects in
-`microservice` directory: `api`, `demo`, `ìngest`, `process`.
-
-* Go to the directory of the sub-project, and then go to the directory
-  `target/universal`. You should find the Zip file at this level.
-* Copy the Zip file to your VM with `scp`.
-
-```shell
-$ scp -P 2222 target/universal/<file>.zip root@<host>:./
-```
-
-* Unzip the copied file in the remote VM.
-
-```shell
-$ unzip <file>.zip
+$ docker compose -f docker/docker-compose-cassandra.yaml -p cassandra up
 ```
 
 ### Prepare Kafka & Cassandra
@@ -130,27 +66,28 @@ $ unzip <file>.zip
 Before running your application, you will need to initialize Kafka and
 Cassandra, in order to create the necessary topic and table.
 
-From `microservice-demo` directory, run `./bin/init-main`.
+Scala: In the directory `demo`, open the file
+`InitMain.scala` and run it.
 
 ### Run the applications
 
 To run your application, this is what you will need
 
-1. In `microservice-api`, run `./bin/microservice-api`
-2. In `microservice-process`, run `./bin/microservice-process`
-3. In `microservice-ingest`, run `./bin/microservice-ingest`
+1. In `api`, run `MicroserviceApiMain`
+2. In `process`, run `MicroserviceProcessMain`
+3. In `ingest`, run `MicroserviceIngestMain`
 
 #### => Exercise
 
-In `microservice-demo` directory, run `./bin/injector-main`.
+In `demo` directory, run `InjectorMain`.
 
-From your computer, in a browser or by using `curl` or `wget`, try one
-of those URLs:
+From your computer, in a browser or by using `curl` or `wget`, try
+those URLs:
 
-* http://&lt;host>:8080/api/stocks/1
-* http://&lt;host>:8080/api/stocks/2
-* http://&lt;host>:8080/api/stocks/unknown
-* http://&lt;host>:8080/api/stocks
+* http://localhost:8080/api/stocks/1
+* http://localhost:8080/api/stocks/2
+* http://localhost:8080/api/stocks/unknown
+* http://localhost:8080/api/stocks
 
 ## Note on the Web
 
@@ -159,6 +96,7 @@ available over the Internet. It is based on HTTP protocol (_HyperText
 Transfer Protocol_).
 
 HTTP protocol works as a client/server protocol
+
 1. A client connects to a server by using a TCP/IP socket.
 2. The client sends an HTTP request to the server.
 3. The server process the request and sends back an HTTP response.
@@ -198,6 +136,7 @@ communicate) are so common that it is easy to find libraries in
 different languages to handle such protocol.
 
 On server side:
+
 * Spring boot, Java Spark for Java
 * http4s, Akka http for Scala
 * Play Framework for Java and Scala
@@ -207,6 +146,7 @@ On server side:
 * ...
 
 On the client side:
+
 * OkHttp for Java
 * sttp, http4s for Scala
 * ...

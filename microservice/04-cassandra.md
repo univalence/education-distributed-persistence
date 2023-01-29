@@ -25,10 +25,14 @@ perform such queries, but you may have timeout error.
 The data is stored in the Cassandra table `stock` in the keyspace
 `store`. A _keyspace_ is a namespace that group tables. You can access
 Cassandra database and run CQL queries (ie. CQL is a dialect of SQL for
-Cassandra) with `cqlsh`, located in `/opt/cassandra/bin`.
+Cassandra) with `cqlsh`.
 
 #### => Exercise
 
+* Open Docker Desktop
+* In the container tab, click on a cassandra node
+* Click on Terminal tab
+* Execute the command `cqlsh`
 * Try those queries with `cqlsh`
 
 ```sql
