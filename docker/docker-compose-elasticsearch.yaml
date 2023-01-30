@@ -1,6 +1,6 @@
 services:
   elasticsearch-1:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.1
     container_name: elasticsearch-1
     environment:
       - ELASTICSEARCH_CLUSTER_NAME=es-cluster
@@ -25,7 +25,7 @@ services:
       - elastic
 
   elasticsearch-2:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.1
     container_name: elasticsearch-2
     environment:
       - ELASTICSEARCH_CLUSTER_NAME=es-cluster
@@ -50,7 +50,7 @@ services:
       - elastic
 
   elasticsearch-3:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.1
     container_name: elasticsearch-3
     environment:
       - ELASTICSEARCH_CLUSTER_NAME=es-cluster
@@ -75,7 +75,7 @@ services:
       - elastic
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.5.3
+    image: docker.elastic.co/kibana/kibana:8.6.1
     environment:
       ELASTICSEARCH_HOSTS: "http://elasticsearch-1:9200"
     ports:

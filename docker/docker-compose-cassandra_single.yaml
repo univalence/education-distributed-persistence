@@ -1,0 +1,9 @@
+services:
+  cassandra1:
+    image: cassandra:4
+    ports:
+      - 7000:7000
+      - 9042:9042
+    environment:
+      - CASSANDRA_SEEDS=cassandra1
+      - CASSANDRA_CLUSTER_NAME=cassandra-cluster
