@@ -43,15 +43,19 @@ object cassandra_utils {
               cols
                 .zip(sizes)
                 .map { case (col, size) =>
+                  val colValue = Option(row.getObject(col.getName))
                   val value =
-                    Option(row.getObject(col.getName))
+                    colValue
                       .map(_.toString)
                       .getOrElse(s"\u001b[1m$nullValue${Console.RESET}")
                   col.getType.getProtocolCode match {
                     case DataType.INT | DataType.FLOAT | DataType.DOUBLE | DataType.DECIMAL =>
                       leftPad(value, size, ' ')
                     case _ =>
-                      value.padTo(size, ' ')
+                      if (colValue.isEmpty)
+                        value.padTo(size + 2 * Console.RESET.size, ' ')
+                      else
+                        value.padTo(size, ' ')
                   }
                 }
                 .mkString("|", "|", "|")
