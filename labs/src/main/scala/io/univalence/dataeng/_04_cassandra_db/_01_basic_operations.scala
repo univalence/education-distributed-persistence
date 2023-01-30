@@ -163,13 +163,15 @@ object _01_basic_operations {
            * This CQL query will create a keyspace.
            *
            * TODO modify this query to create the keyspace `education`
+           * also set the replication factor to the number of available
+           * nodes.
            *
            * Note: once done, ensures that this exercise is ignored
            * again.
            */
           session.execute("""CREATE KEYSPACE IF NOT EXISTS ??? WITH replication = {
                             |  'class':              'SimpleStrategy',
-                            |  'replication_factor': '1'
+                            |  'replication_factor': '???'
                             |}""".stripMargin)
         }
 
