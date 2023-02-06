@@ -192,6 +192,26 @@ object _01_introduction {
 
       exercise_ignore("Create an index for users") {
 
+        val response =
+          http_PUT(
+            s"$baseUrl/user",
+            s"""{
+               |  "settings": {
+               |    "index": {
+               |      "number_of_shards": 4,
+               |      "number_of_replicas": 3
+               |    }
+               |  }
+               |}""".stripMargin
+          )
+        display(response)
+
+        check(response.code == 200)
+        check(response.message == "OK")
+      }
+
+      exercise_ignore("Add users") {
+
         /**
          * In this exercise, we start by creating an index of users. To
          * create an index, you only need to send a document.
@@ -321,7 +341,7 @@ object _01_introduction {
         check((data / "age").getAsInt == 35)
       }
 
-      exercise("Get a user by name") {
+      exercise_ignore("Get a user by name") {
 
         /**
          * As a search engine, Elasticsearch is able to retrieve
@@ -377,7 +397,7 @@ object _01_introduction {
         check((data / "age").getAsInt == 28)
       }
 
-      exercise("Search users with a query string") {
+      exercise_ignore("Search users with a query string") {
 
         /**
          * Another way to retrieve document is to use a query string.
@@ -440,7 +460,7 @@ object _01_introduction {
         check(data == Set("Maria", "Mario"))
       }
 
-      exercise("Write a search request to get all users between 20 and 30") {
+      exercise_ignore("Write a search request to get all users between 20 and 30") {
         val response =
           http_POST(
             s"$baseUrl/user/_search",
