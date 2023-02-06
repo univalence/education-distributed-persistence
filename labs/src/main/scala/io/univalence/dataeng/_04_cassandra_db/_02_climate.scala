@@ -15,21 +15,30 @@ import java.net.InetSocketAddress
 import java.util.zip.GZIPInputStream
 
 /**
- * ==In this file==
- *   - The code is wrapped around a TestContainer creating the Cassandra
- *     container to interact with.
- *   - You then have an exercise to interact with Cassandra.
+ * In this file we will use Cassandra on a larger dataset: the evolution
+ * of temperatures around the world.
  */
-object _02_temperatures {
+object _02_climate {
 
   /**
-   * In this file, we will explore data in the file
-   * `data/climate/city_temperature.csv.gz`. It is a file with
-   * temperature of cities around the world.
+   * The temperature file is `data/climate/city_temperature.csv.gz`.
+   * This file looks like:
    *
-   * Below is the Scala case class of each temperature record.
+   * {{{
+   * Region,Country,State,City,Month,Day,Year,AverageTemperature
+   * Asia,Kazakhstan,,Almaty,2,22,2010,34.0
+   * Asia,Kazakhstan,,Almaty,2,23,2010,30.7
+   * Asia,Kazakhstan,,Almaty,2,24,2010,34.1
+   * Asia,Kazakhstan,,Almaty,2,25,2010,32.7
+   * }}}
+   *
+   * `State` is a field that is only used for the USA.
+   * `AverageTemperature` is given in fahrenheit.
+   *
+   * Those data should be mapped in a memory representation, easier to
+   * operate. Below is the Scala case class for temperature records.
+   * Note: `Option` type indicates that a value might be present or not. If it is
    */
-
   case class Temperature(
       region:             String,
       country:            String,
@@ -152,9 +161,9 @@ object _02_temperatures {
           session.execute(bound)
         }
 
-        val result = session.execute("SELECT year FROM climate.temperature_by_year")
-        val rows = result.all().asScala.toList
-        val yearCount  = rows.map(_.getInt("year")).distinct.length
+        val result    = session.execute("SELECT year FROM climate.temperature_by_year")
+        val rows      = result.all().asScala.toList
+        val yearCount = rows.map(_.getInt("year")).distinct.length
 
         comment("What is the number of years covers by the dataset?")
         check(yearCount == ??)
@@ -199,9 +208,10 @@ object _02_temperatures {
         }
 
         // TODO get the temperature list for Algeria
-        val result = session.execute(
-        """???"""
-        )
+        val result =
+          session.execute(
+            """???"""
+          )
 
         val algeriaTemperatures: List[Row] = result.all().asScala.toList
 
