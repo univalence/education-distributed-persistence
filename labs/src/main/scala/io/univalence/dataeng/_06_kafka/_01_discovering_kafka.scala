@@ -142,6 +142,11 @@ object _01_manage_kafka {
         }
 
         exercise_ignore("Check created topic") {
+
+          /**
+           * You can get different information from a topic. Especially,
+           * the list of partitions and which brokers manage it.
+           */
           val description = admin.describeTopics(List("message").asJava).allTopicNames().get().get("message")
           val partitions: Map[Int, TopicPartitionInfo] =
             description
@@ -153,7 +158,7 @@ object _01_manage_kafka {
           comment("structure of topic message")
           partitions.values.toList.sortBy(_.partition()).foreach { tp =>
             val replicas = tp.replicas().asScala.map(_.id()).mkString(",")
-            val isr = tp.isr().asScala.map(_.id()).mkString(",")
+            val isr      = tp.isr().asScala.map(_.id()).mkString(",")
             println(s"  partition ${tp.partition()}: leader=${tp.leader().id()} - replicas:$replicas - isr:$isr")
           }
 
