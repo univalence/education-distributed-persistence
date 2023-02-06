@@ -53,33 +53,33 @@ object kafka_utils {
   def createTopics(topics: Set[String])(bootstrap: String): Unit =
     withAdminClientOn(bootstrap) { admin =>
       val nodeCount = Math.min(3, admin.describeCluster().nodes().get().size())
-      val newTopics =
-        topics
-          .map(topicName =>
-            new NewTopic(
-              // this is the topic name
-              topicName,
-              // this is the number of partitions to set in the topic
-              4,
-              // this the number of replica
-              nodeCount.toShort
-            )
+
+      topics
+        .map(topicName =>
+          new NewTopic(
+            // this is the topic name
+            topicName,
+            // this is the number of partitions to set in the topic
+            4,
+            // this the number of replica
+            nodeCount.toShort
           )
-          .foreach { topic =>
-            Try {
-              admin.createTopics(List(topic).asJava).all().get()
-            }.fold(
-              {
-                case e: ExecutionException =>
-                  e.getCause match {
-                    case _: TopicExistsException => ()
-                    case e                       => throw e
-                  }
-                case e => throw e
-              },
-              _ => ()
-            )
-          }
+        )
+        .foreach { topic =>
+          Try {
+            admin.createTopics(List(topic).asJava).all().get()
+          }.fold(
+            {
+              case e: ExecutionException =>
+                e.getCause match {
+                  case _: TopicExistsException => ()
+                  case e                       => throw e
+                }
+              case e => throw e
+            },
+            _ => ()
+          )
+        }
 
       retry(retryCount = 5, delayMs = 1000) {
         admin.listTopics(new ListTopicsOptions).names().get().asScala
