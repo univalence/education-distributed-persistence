@@ -129,19 +129,10 @@ lazy val labs =
         "com.google.code.gson"          % "gson"                      % libVersion.gson,
         "org.slf4j"                     % "slf4j-api"                 % libVersion.slf4j,
         "ch.qos.logback"                % "logback-classic"           % libVersion.logback,
-        "co.elastic.clients"            % "elasticsearch-java"        % libVersion.elasticsearch,
         "org.apache.kafka"              % "kafka-clients"             % libVersion.kafka,
-        "com.fasterxml.jackson.core"    % "jackson-databind"          % libVersion.jackson,
-        "com.fasterxml.jackson.module" %% "jackson-module-scala"      % libVersion.jackson,
-        "org.testcontainers"            % "testcontainers"            % libVersion.testcontainers,
-        "org.testcontainers"            % "elasticsearch"             % libVersion.testcontainers,
-        "org.testcontainers"            % "cassandra"                 % libVersion.testcontainers,
-        "org.testcontainers"            % "kafka"                     % libVersion.testcontainers,
         "org.rocksdb"                   % "rocksdbjni"                % libVersion.rocksdb,
         "org.mapdb"                     % "mapdb"                     % libVersion.mapdb,
         "com.datastax.oss"              % "java-driver-core"          % libVersion.cassandra,
-        "com.datastax.oss"              % "java-driver-query-builder" % libVersion.cassandra,
-        "com.typesafe"                  % "config"                    % libVersion.typsafeConfig,
         "org.scalatest"                %% "scalatest"                 % libVersion.scalatest % Test
       )
     )

@@ -1,7 +1,5 @@
 package io.univalence.dataeng._05_elasticsearch
 
-import com.datastax.driver.core.LocalDate
-
 import io.univalence.dataeng.internal.elasticsearch_utils._
 import io.univalence.dataeng.internal.utils.using
 
@@ -9,6 +7,7 @@ import scala.io.Source
 import scala.util.Try
 
 import java.io.FileInputStream
+import java.time.LocalDate
 import java.util.zip.GZIPInputStream
 
 object _03_climate {
@@ -58,7 +57,7 @@ object _03_climate {
       val temperatures: Iterator[Temperature] =
         (for (line <- file.getLines().drop(1)) yield try {
           val fields     = line.split(",")
-          val date       = Try(LocalDate.fromYearMonthDay(fields(6).toInt, fields(4).toInt, fields(5).toInt)).toOption
+          val date       = Try(LocalDate.of(fields(6).toInt, fields(4).toInt, fields(5).toInt)).toOption
           val tempValue  = fields(7).toDouble
           val fahrenheit = Option.when(tempValue > -99)(tempValue)
 
