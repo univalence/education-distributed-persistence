@@ -151,7 +151,7 @@ io.univalence.dataeng.internal.exercise_macros.Section(
     val expressionString =
       lineContent.substring(
         position.start - offsetLine,
-        position.end - offsetLine
+        Math.min(position.end - offsetLine, lineContent.length)
       )
 
     c.Expr[Unit](
