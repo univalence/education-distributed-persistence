@@ -1,4 +1,8 @@
-target/
-.idea/
+.bloop/
 .bsp/
 .DS_Store
+.idea/
+.metals/
+.vscode/
+metals.sbt
+target/
