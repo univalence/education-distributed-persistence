@@ -124,16 +124,17 @@ lazy val labs =
     .settings(
       name := "labs",
       libraryDependencies ++= Seq(
-        "com.sparkjava"                 % "spark-core"                % libVersion.javaSpark,
-        "com.squareup.okhttp3"          % "okhttp"                    % libVersion.okhttp,
-        "com.google.code.gson"          % "gson"                      % libVersion.gson,
-        "org.slf4j"                     % "slf4j-api"                 % libVersion.slf4j,
-        "ch.qos.logback"                % "logback-classic"           % libVersion.logback,
-        "org.apache.kafka"              % "kafka-clients"             % libVersion.kafka,
-        "org.rocksdb"                   % "rocksdbjni"                % libVersion.rocksdb,
-        "org.mapdb"                     % "mapdb"                     % libVersion.mapdb,
-        "com.datastax.oss"              % "java-driver-core"          % libVersion.cassandra,
-        "org.scalatest"                %% "scalatest"                 % libVersion.scalatest % Test
+        "com.sparkjava"        % "spark-core"       % libVersion.javaSpark,
+        "com.squareup.okhttp3" % "okhttp"           % libVersion.okhttp,
+        "com.google.code.gson" % "gson"             % libVersion.gson,
+        "com.lihaoyi"         %% "upickle"          % "3.1.3",
+        "org.slf4j"            % "slf4j-api"        % libVersion.slf4j,
+        "ch.qos.logback"       % "logback-classic"  % libVersion.logback,
+        "org.apache.kafka"     % "kafka-clients"    % libVersion.kafka,
+        "org.rocksdb"          % "rocksdbjni"       % libVersion.rocksdb,
+        "org.mapdb"            % "mapdb"            % libVersion.mapdb,
+        "com.datastax.oss"     % "java-driver-core" % libVersion.cassandra,
+        "org.scalatest"       %% "scalatest"        % libVersion.scalatest % Test
       )
     )
     .dependsOn(`labs-macro`)
